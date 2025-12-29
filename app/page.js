@@ -41,10 +41,10 @@ export default function Home() {
       content: `Во исполнение плана служебно-боевой подготовки на 2024 год, **ПРИКАЗЫВАЮ:**
 
 1. Утвердить план служебной подготовки личного состава на I квартал 2024 года.
-2. Назначить ответственным за организацию служебной подготовки заместителя начальника учебного взвода.
+2. Назначить ответственным за организацию служебной подготовки.
 3. Провести внеплановую проверку знаний служебных инструкций до 25 декабря 2024 года.
 4. Обеспечить 100% явку личного состава на занятия по служебной подготовке.
-5. Контроль за исполнением настоящего приказа возложить на заместителя начальника учебного взвода.
+5. Контроль за исполнением настоящего приказа возложить на ответственного.
 
 **Настоящий приказ довести до всего личного состава учебного взвода.**`
     },
@@ -74,15 +74,15 @@ export default function Home() {
       title: "Благодарственное письмо за образцовую службу",
       content: `Выражаем искреннюю благодарность за добросовестное исполнение служебных обязанностей, высокий профессионализм и личный вклад в обеспечение правопорядка.
 
-**Ваша работа отмечена по следующим критериям:**
+**Работа отмечена по следующим критериям:**
 • Отличные результаты в служебной деятельности
 • Ответственное отношение к выполнению задач
 • Проявление инициативы и творческого подхода
-• Наставничество и помощь молодым сотрудникам
+• Наставничество и помощь коллегам
 
 Желаем дальнейших успехов в службе, крепкого здоровья и благополучия!
 
-**С уважением, руководство учебного взвода.**`
+**С уважением, руководство.**`
     }
   ]
 
@@ -181,28 +181,13 @@ export default function Home() {
             margin: 30px 0;
             white-space: pre-line;
           }
-          .signatures {
-            margin-top: 100px;
-          }
-          .signature-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 50px;
-          }
-          .signature-info {
-            font-size: 12pt;
-          }
-          .signature-line {
-            text-align: center;
-            margin-top: 60px;
-          }
           .stamp {
-            margin-top: 80px;
+            margin-top: 100px;
             text-align: center;
             color: #666;
             font-size: 10pt;
             border-top: 1px solid #ccc;
-            padding-top: 10px;
+            padding-top: 20px;
           }
           strong { font-weight: bold; }
           em { font-style: italic; }
@@ -214,7 +199,7 @@ export default function Home() {
           <div class="header">
             <h1>МИНИСТЕРСТВО ВНУТРЕННИХ ДЕЛ РОССИЙСКОЙ ФЕДЕРАЦИИ</h1>
             <h2>УЧЕБНЫЙ ВЗВОД ДОРОЖНО-ПАТРУЛЬНОЙ СЛУЖБЫ</h2>
-            <div>по г. Горки</div>
+            <div>г. Горки</div>
           </div>
           
           <div class="separator"></div>
@@ -225,7 +210,7 @@ export default function Home() {
             <div>№ ${docNumber}</div>
             <div>от ${today} г.</div>
             <br>
-            <div>г. Москва</div>
+            <div>г. Горки</div>
             <div>${today} г.</div>
           </div>
           
@@ -235,32 +220,7 @@ export default function Home() {
             .replace(/\*(.*?)\*/g, '<em>$1</em>')
             .replace(/__(.*?)__/g, '<u>$1</u>')}</div>
           
-          <div class="signatures">
-            <div class="signature-row">
-              <div class="signature-info">
-                <div><strong>НАЧАЛЬНИК УЧЕБНОГО ВЗВОДА</strong></div>
-                <div>по г. Горки</div>
-              </div>
-              <div class="signature-line">
-                <div>_____________________</div>
-                <div>Хоскерт Хилл</div>
-              </div>
-            </div>
-            
-            <div class="signature-row">
-              <div class="signature-info">
-                <div><strong>ЗАМЕСТИТЕЛЬ НАЧАЛЬНИКА</strong></div>
-                <div>по г. Горки</div>
-              </div>
-              <div class="signature-line">
-                <div>_____________________</div>
-                <div>Д. ЕВТУШЕНОВ</div>
-              </div>
-            </div>
-          </div>
-          
           <div class="stamp">
-            <div>СОГЛАСОВАНО:</div>
             <div>Документ составлен: ${today}</div>
             <div><strong>ДЛЯ СЛУЖЕБНОГО ПОЛЬЗОВАНИЯ</strong></div>
           </div>
@@ -523,6 +483,11 @@ export default function Home() {
                         </p>
                       ))}
                     </div>
+                    
+                    <div className="text-center text-gray-500 text-sm mt-12 pt-4 border-t">
+                      <div>Документ составлен: {new Date().toLocaleDateString('ru-RU')}</div>
+                      <div className="font-bold">ДЛЯ СЛУЖЕБНОГО ПОЛЬЗОВАНИЯ</div>
+                    </div>
                   </div>
                 ) : (
                   <div className="text-center text-gray-500 py-20">
@@ -542,7 +507,6 @@ export default function Home() {
           </div>
           <div className="text-sm text-blue-200">
             <p>Все документы оформляются в соответствии с официальными требованиями</p>
-            <p className="mt-1">Подписи: Начальник - Хоскерт Хилл, Заместитель - Д. Евтушенов</p>
           </div>
         </footer>
       </div>
