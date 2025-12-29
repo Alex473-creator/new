@@ -105,7 +105,21 @@ export default function Home() {
   }
 
   // Экспорт документа (обновленная версия с инструкцией для телефона)
-  const exportDocument = () => {
+ // Экспорт документа как изображение
+const exportDocument = async () => {
+  try {
+    if (!documentTitle.trim()) {
+      alert('Введите название документа')
+      return
+    }
+    if (!documentContent.trim()) {
+      alert('Введите содержание документа')
+      return
+    }
+
+    // Показываем сообщение о начале генерации
+    alert('Генерируем изображение... Пожалуйста, подождите.')
+
     const today = new Date().toLocaleDateString('ru-RU')
     const docNumber = `${today.replace(/\D/g, '')}-УВ/Г`
     
@@ -115,6 +129,195 @@ export default function Home() {
       'объявление': 'ОФИЦИАЛЬНОЕ ОБЪЯВЛЕНИЕ',
       'благодарность': 'БЛАГОДАРСТВЕННОЕ ПИСЬМО'
     }[documentType] || 'ДОКУМЕНТ'
+
+    // Создаем canvas для генерации изображения
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
+    
+    // Размеры изображения (A4 в пикселях для 300 DPI)
+    const width = 2480 // A4 width at 300 DPI
+    const height = 3508 // A4 height at 300 DPI
+    
+    canvas.width = width
+    canvas.height = height
+    
+    // Заливаем белым фоном
+    ctx.fillStyle = 'white'
+    ctx.fillRect(0, 0, width, height)
+    
+    // Настраиваем шрифт
+    ctx.font = 'bold 80px "Times New Roman"'
+    ctx.fillStyle = '#1e3a5f'
+    ctx.textAlign = 'center'
+    
+    // Заголовок МВД
+    ctx.fillText('МИНИСТЕРСТВО ВНУТРЕННИХ ДЕЛ', width / 2, 200)
+    ctx.font = '60px "Times New Roman"'
+    ctx.fillText('РОССИЙСКОЙ ФЕДЕРАЦИИ', width / 2, 280)
+    
+    // Подзаголовок
+    ctx.font = '50px "Times New Roman"'
+    ctx.fillStyle = '#333'
+    ctx.fillText('УЧЕБНЫЙ ВЗВОД ДОРОЖНО-ПАТРУЛЬНОЙ СЛУЖБЫ', width / 2, 380)
+    ctx.font = '40px "Times New Roman"'
+    ctx.fillText('г. Горки', width / 2, 450)
+    
+    // Разделительная линия
+    ctx.strokeStyle = '#b22222'
+    ctx.lineWidth = 4
+    ctx.beginPath()
+    ctx.moveTo(200, 520)
+    ctx.lineTo(width - 200, 520)
+    ctx.stroke()
+    
+    // Тип документа
+    ctx.font = 'bold 90px "Times New Roman"'
+    ctx.fillStyle = '#b22222'
+    ctx.fillText(docTypeText, width / 2, 650)
+    
+    // Номер и дата
+    ctx.font = '40px "Times New Roman"'
+    ctx.fillStyle = '#333'
+    ctx.textAlign = 'right'
+    ctx.fillText(`№ ${docNumber}`, width - 200, 750)
+    ctx.fillText(`от ${today} г.`, width - 200, 800)
+    ctx.fillText('г. Горки', width - 200, 880)
+    ctx.fillText(`${today} г.`, width - 200, 920)
+    
+    // Название документа
+    ctx.font = 'bold italic 70px "Times New Roman"'
+    ctx.fillStyle = '#1a1a2e'
+    ctx.textAlign = 'center'
+    
+    // Разбиваем длинное название на строки
+    const titleLines = wrapText(ctx, `«${documentTitle}»`, width - 400, 70)
+    let currentY = 1100
+    titleLines.forEach(line => {
+      ctx.fillText(line, width / 2, currentY)
+      currentY += 80
+    })
+    
+    // Содержание документа
+    ctx.font = '45px "Times New Roman"'
+    ctx.fillStyle = '#000'
+    ctx.textAlign = 'left'
+    
+    // Обрабатываем форматирование и переносы
+    const contentLines = documentContent.split('\n')
+    currentY += 80
+    
+    for (let line of contentLines) {
+      if (line.trim() === '') {
+        currentY += 50 // Отступ между абзацами
+        continue
+      }
+      
+      // Обработка форматирования
+      let isBold = false
+      let isItalic = false
+      let isUnderline = false
+      
+      // Проверяем форматирование
+      if (line.includes('**')) {
+        isBold = true
+        line = line.replace(/\*\*/g, '')
+      }
+      if (line.includes('*')) {
+        isItalic = true
+        line = line.replace(/\*/g, '')
+      }
+      if (line.includes('__')) {
+        isUnderline = true
+        line = line.replace(/__/g, '')
+      }
+      
+      // Устанавливаем стиль шрифта
+      let fontStyle = '45px "Times New Roman"'
+      if (isBold && isItalic) {
+        fontStyle = 'bold italic 45px "Times New Roman"'
+      } else if (isBold) {
+        fontStyle = 'bold 45px "Times New Roman"'
+      } else if (isItalic) {
+        fontStyle = 'italic 45px "Times New Roman"'
+      }
+      ctx.font = fontStyle
+      
+      // Разбиваем длинные строки
+      const wrappedLines = wrapText(ctx, line, width - 400, 45)
+      
+      wrappedLines.forEach(wrappedLine => {
+        if (currentY > height - 400) {
+          return // Не выходим за пределы страницы
+        }
+        
+        ctx.fillText(wrappedLine, 200, currentY)
+        
+        // Подчеркивание если нужно
+        if (isUnderline) {
+          const textWidth = ctx.measureText(wrappedLine).width
+          ctx.beginPath()
+          ctx.moveTo(200, currentY + 5)
+          ctx.lineTo(200 + textWidth, currentY + 5)
+          ctx.strokeStyle = '#000'
+          ctx.lineWidth = 2
+          ctx.stroke()
+        }
+        
+        currentY += 60
+      })
+      
+      // Сбрасываем стили
+      ctx.font = '45px "Times New Roman"'
+    }
+    
+    // Штамп внизу
+    ctx.font = '35px "Times New Roman"'
+    ctx.fillStyle = '#666'
+    ctx.textAlign = 'center'
+    ctx.fillText(`Документ составлен: ${today}`, width / 2, height - 150)
+    ctx.font = 'bold 35px "Times New Roman"'
+    ctx.fillText('ДЛЯ СЛУЖЕБНОГО ПОЛЬЗОВАНИЯ', width / 2, height - 80)
+    
+    // Преобразуем canvas в изображение
+    const image = canvas.toDataURL('image/png', 1.0)
+    
+    // Создаем ссылку для скачивания
+    const link = document.createElement('a')
+    link.href = image
+    link.download = `Документ_${documentTitle.replace(/[^a-zа-яё0-9]/gi, '_')}_${Date.now()}.png`
+    
+    // Скачиваем
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    
+    alert('✅ Изображение успешно скачано! Проверьте папку "Загрузки".')
+    
+  } catch (error) {
+    console.error('Ошибка генерации изображения:', error)
+    alert('❌ Произошла ошибка при создании изображения. Попробуйте снова.')
+  }
+}
+
+// Функция для переноса текста
+const wrapText = (context, text, maxWidth, fontSize) => {
+  const words = text.split(' ')
+  const lines = []
+  let currentLine = words[0]
+
+  for (let i = 1; i < words.length; i++) {
+    const word = words[i]
+    const width = context.measureText(currentLine + ' ' + word).width
+    if (width < maxWidth) {
+      currentLine += ' ' + word
+    } else {
+      lines.push(currentLine)
+      currentLine = word
+    }
+  }
+  lines.push(currentLine)
+  return lines
+}
 
     // Создаем HTML для документа
     const docHTML = `
