@@ -105,16 +105,207 @@ export default function Home() {
   }
 
   // Экспорт документа
-  const exportDocument = () => {
-    const today = new Date().toLocaleDateString('ru-RU')
-    const docNumber = `${today.replace(/\D/g, '')}-УВ/Г`
+ // Экспорт документа (обновленная версия)
+const exportDocument = () => {
+  const today = new Date().toLocaleDateString('ru-RU')
+  const docNumber = `${today.replace(/\D/g, '')}-УВ/Г`
+  
+  const docTypeText = {
+    'конкурс': 'ОБЪЯВЛЕНИЕ О КОНКУРСЕ',
+    'приказ': 'П Р И К А З',
+    'объявление': 'ОФИЦИАЛЬНОЕ ОБЪЯВЛЕНИЕ',
+    'благодарность': 'БЛАГОДАРСТВЕННОЕ ПИСЬМО'
+  }[documentType] || 'ДОКУМЕНТ'
+
+  // Создаем HTML для документа
+  const docHTML = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>${documentTitle}</title>
+      <style>
+        @import url('https://fonts.googleapis.com/css2?family=Times+New+Roman:wght@400;700&display=swap');
+        body {
+          font-family: 'Times New Roman', serif;
+          margin: 0;
+          padding: 10mm;
+          line-height: 1.6;
+          background: white;
+          color: black;
+          font-size: 14pt;
+        }
+        @media print {
+          body { padding: 0; }
+        }
+        .document {
+          max-width: 210mm;
+          margin: 0 auto;
+        }
+        .header {
+          text-align: center;
+          margin-bottom: 20px;
+        }
+        .header h1 {
+          font-size: 14pt;
+          font-weight: bold;
+          color: #1e3a5f;
+          margin-bottom: 8px;
+        }
+        .header h2 {
+          font-size: 12pt;
+          color: #333;
+          margin-bottom: 5px;
+        }
+        .separator {
+          border-top: 2px solid #b22222;
+          margin: 15px 0;
+        }
+        .doc-type {
+          text-align: center;
+          font-size: 16pt;
+          font-weight: bold;
+          color: #b22222;
+          margin: 20px 0;
+        }
+        .doc-info {
+          text-align: right;
+          margin: 15px 0;
+          font-size: 11pt;
+        }
+        .doc-title {
+          text-align: center;
+          font-size: 14pt;
+          font-weight: bold;
+          font-style: italic;
+          margin: 30px 0;
+          color: #1a1a2e;
+        }
+        .doc-content {
+          font-size: 12pt;
+          margin: 20px 0;
+          white-space: pre-line;
+        }
+        .stamp {
+          margin-top: 80px;
+          text-align: center;
+          color: #666;
+          font-size: 9pt;
+          border-top: 1px solid #ccc;
+          padding-top: 15px;
+        }
+        strong { font-weight: bold; }
+        em { font-style: italic; }
+        u { text-decoration: underline; }
+        
+        /* Стили для мобильных инструкций */
+        .mobile-help {
+          display: none;
+          background: #f8f9fa;
+          border: 2px solid #007bff;
+          border-radius: 10px;
+          padding: 15px;
+          margin: 20px 0;
+          text-align: left;
+        }
+        @media (max-width: 768px) {
+          .mobile-help {
+            display: block;
+          }
+        }
+        .help-title {
+          color: #007bff;
+          font-weight: bold;
+          margin-bottom: 10px;
+        }
+        .help-step {
+          margin-bottom: 8px;
+          padding-left: 20px;
+          position: relative;
+        }
+        .help-step:before {
+          content: "✓";
+          color: #28a745;
+          position: absolute;
+          left: 0;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="mobile-help">
+        <div class="help-title">📱 Как сохранить на телефоне:</div>
+        <div class="help-step">Нажмите ⋮ (три точки)</div>
+        <div class="help-step">Выберите "Поделиться"</div>
+        <div class="help-step">Нажмите "Печать" или "Сохранить"</div>
+        <div class="help-step">Выберите "Сохранить как PDF"</div>
+      </div>
+      
+      <div class="document">
+        <div class="header">
+          <h1>МИНИСТЕРСТВО ВНУТРЕННИХ ДЕЛ РОССИЙСКОЙ ФЕДЕРАЦИИ</h1>
+          <h2>УЧЕБНЫЙ ВЗВОД ДОРОЖНО-ПАТРУЛЬНОЙ СЛУЖБЫ</h2>
+          <div>г. Горки</div>
+        </div>
+        
+        <div class="separator"></div>
+        
+        <div class="doc-type">${docTypeText}</div>
+        
+        <div class="doc-info">
+          <div>№ ${docNumber}</div>
+          <div>от ${today} г.</div>
+          <br>
+          <div>г. Горки</div>
+          <div>${today} г.</div>
+        </div>
+        
+        <div class="doc-title">«${documentTitle}»</div>
+        
+        <div class="doc-content">${documentContent.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+          .replace(/\*(.*?)\*/g, '<em>$1</em>')
+          .replace(/__(.*?)__/g, '<u>$1</u>')}</div>
+        
+        <div class="stamp">
+          <div>Документ составлен: ${today}</div>
+          <div><strong>ДЛЯ СЛУЖЕБНОГО ПОЛЬЗОВАНИЯ</strong></div>
+        </div>
+      </div>
+    </body>
+    </html>
+  `
+
+  // Создаем окно с инструкцией для мобильных
+  const printWindow = window.open('', '_blank')
+  printWindow.document.write(docHTML)
+  printWindow.document.close()
+  
+  // Показываем разные инструкции для ПК и телефона
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+  
+  if (isMobile) {
+    const mobileInstructions = `
+📱 **ИНСТРУКЦИЯ ДЛЯ ТЕЛЕФОНА:**
+
+1. **Нажмите ⋮ (три точки)** вверху браузера
+2. **Выберите "Поделиться"**
+3. **Нажмите "Печать"**
+4. **Вместо припнтера выберите "Сохранить как PDF"**
+5. **Выберите место сохранения**
+
+ИЛИ
+
+1. **Сделайте скриншот** экрана
+2. **Нажмите "Поделиться"** 
+3. **Сохраните в галерее**
+
+Документ открыт в новой вкладке.`
     
-    const docTypeText = {
-      'конкурс': 'ОБЪЯВЛЕНИЕ О КОНКУРСЕ',
-      'приказ': 'П Р И К А З',
-      'объявление': 'ОФИЦИАЛЬНОЕ ОБЪЯВЛЕНИЕ',
-      'благодарность': 'БЛАГОДАРСТВЕННОЕ ПИСЬМО'
-    }[documentType] || 'ДОКУМЕНТ'
+    alert(mobileInstructions)
+  } else {
+    alert('Документ готов! Нажмите Ctrl+P и выберите "Сохранить как PDF"')
+  }
+}
 
     // Создаем HTML для документа
     const docHTML = `
