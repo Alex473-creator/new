@@ -386,7 +386,7 @@ ${selectedUnit.toUpperCase()} ${selectedCity}
     ctx.save()
     ctx.globalAlpha = 0.03
     ctx.fillStyle = '#000000'
-    ctx.font = 'bold 280px "Times New Roman"'
+    ctx.font = 'bold 320px "Times New Roman"'
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
     
@@ -395,7 +395,7 @@ ${selectedUnit.toUpperCase()} ${selectedCity}
     
     for (let i = -1; i <= 1; i++) {
       for (let j = -1; j <= 1; j++) {
-        ctx.fillText(text, i * 650, j * 650)
+        ctx.fillText(text, i * 700, j * 700)
       }
     }
     
@@ -407,17 +407,17 @@ ${selectedUnit.toUpperCase()} ${selectedCity}
     ctx.globalAlpha = 0.02
     
     // Мелкий повторяющийся текст
-    ctx.font = '14px "Arial"'
+    ctx.font = 'bold 18px "Arial"'
     ctx.fillStyle = '#000000'
     
-    for (let x = 60; x < width; x += 200) {
-      for (let y = 60; y < height; y += 150) {
+    for (let x = 80; x < width; x += 250) {
+      for (let y = 80; y < height; y += 180) {
         ctx.save()
         ctx.translate(x, y)
         ctx.rotate(Math.PI / 6)
         ctx.fillText(docNumber, 0, 0)
-        ctx.fillText('МВД РОССИИ', 0, 20)
-        ctx.fillText(selectedUnit, 0, 40)
+        ctx.fillText('МВД РОССИИ', 0, 25)
+        ctx.fillText(selectedUnit, 0, 50)
         ctx.restore()
       }
     }
@@ -456,8 +456,9 @@ ${selectedUnit.toUpperCase()} ${selectedCity}
       const canvas = document.createElement('canvas')
       const ctx = canvas.getContext('2d')
       
-      const width = 2100
-      const height = 2970
+      // Увеличенные размеры для A4 в высоком разрешении
+      const width = 2480 // A4 в 300 DPI
+      const height = 3508
       
       canvas.width = width
       canvas.height = height
@@ -471,46 +472,51 @@ ${selectedUnit.toUpperCase()} ${selectedCity}
       addSecurityPattern(ctx, width, height, docNumber)
       
       // Основные поля документа
-      const margin = 150
+      const margin = 180
       const contentWidth = width - (margin * 2)
       
-      // Заголовок министерства
+      // Заголовок министерства - УВЕЛИЧЕННЫЙ РАЗМЕР
       ctx.fillStyle = '#000000'
-      ctx.font = 'bold 32px "Times New Roman"'
+      ctx.font = 'bold 48px "Times New Roman"' // Было 32px
       ctx.textAlign = 'center'
-      ctx.fillText('МИНИСТЕРСТВО ВНУТРЕННИХ ДЕЛ РОССИЙСКОЙ ФЕДЕРАЦИИ', width / 2, 180)
-      ctx.font = 'bold 28px "Times New Roman"'
-      ctx.fillText(`${selectedUnit.toUpperCase()} ${selectedCity.toUpperCase()}`, width / 2, 230)
+      ctx.fillText('МИНИСТЕРСТВО ВНУТРЕННИХ ДЕЛ РОССИЙСКОЙ ФЕДЕРАЦИИ', width / 2, 220) // Было 180
       
-      // Линия разделения
+      // Название подразделения - УВЕЛИЧЕННЫЙ РАЗМЕР
+      ctx.font = 'bold 42px "Times New Roman"' // Было 28px
+      ctx.fillText(`${selectedUnit.toUpperCase()} ${selectedCity.toUpperCase()}`, width / 2, 290) // Было 230
+      
+      // Линия разделения - БОЛЕЕ ТОЛСТАЯ
       ctx.beginPath()
-      ctx.moveTo(margin, 280)
-      ctx.lineTo(width - margin, 280)
+      ctx.moveTo(margin, 340) // Было 280
+      ctx.lineTo(width - margin, 340)
       ctx.strokeStyle = '#000000'
-      ctx.lineWidth = 1
+      ctx.lineWidth = 2 // Было 1
       ctx.stroke()
       
-      // Тип документа
-      ctx.font = 'bold 36px "Times New Roman"'
-      ctx.fillText(docTypeText, width / 2, 340)
+      // Тип документа - УВЕЛИЧЕННЫЙ РАЗМЕР
+      ctx.font = 'bold 52px "Times New Roman"' // Было 36px
+      ctx.fillText(docTypeText, width / 2, 420) // Было 340
       
-      // Номер документа
-      ctx.font = 'bold 24px "Times New Roman"'
-      ctx.fillText(`№ ${docNumber}`, width / 2, 400)
+      // Номер документа - УВЕЛИЧЕННЫЙ РАЗМЕР
+      ctx.font = 'bold 36px "Times New Roman"' // Было 24px
+      ctx.fillText(`№ ${docNumber}`, width / 2, 500) // Было 400
       
-      // Дата
-      ctx.font = '20px "Times New Roman"'
-      ctx.fillText(`от ${today}`, width / 2, 450)
+      // Дата - УВЕЛИЧЕННЫЙ РАЗМЕР
+      ctx.font = 'bold 32px "Times New Roman"' // Было 20px
+      ctx.fillText(`от ${today}`, width / 2, 560) // Было 450
       
-      // Название документа
-      ctx.font = 'bold 28px "Times New Roman"'
+      // Название документа - УВЕЛИЧЕННЫЙ РАЗМЕР
+      ctx.font = 'bold 44px "Times New Roman"' // Было 28px
       ctx.textAlign = 'center'
-      const titleLines = wrapText(ctx, documentTitle, contentWidth, 28, 'Times New Roman')
+      
+      // Обрамляем название в кавычки как в оригинале
+      const titleWithQuotes = `«${documentTitle}»`
+      const titleLines = wrapText(ctx, titleWithQuotes, contentWidth, 44, 'Times New Roman')
       titleLines.forEach((line, index) => {
-        ctx.fillText(`«${line}»`, width / 2, 520 + (index * 40))
+        ctx.fillText(line, width / 2, 650 + (index * 55)) // Было 520 + (index * 40)
       })
       
-      const titleHeight = 520 + (titleLines.length * 40)
+      const titleHeight = 650 + (titleLines.length * 55)
       
       // Содержание документа с заменой адресата
       let finalContent = documentContent
@@ -532,40 +538,41 @@ ${selectedUnit.toUpperCase()} ${selectedCity}
         .replace(/«.*»/g, '')
         .replace(/\*\*/g, '')
       
-      ctx.font = '24px "Times New Roman"'
+      // Основной текст документа - УВЕЛИЧЕННЫЙ РАЗМЕР
+      ctx.font = '36px "Times New Roman"' // Было 24px
       ctx.textAlign = 'left'
-      const contentLines = wrapText(ctx, cleanContent, contentWidth, 24, 'Times New Roman')
+      const contentLines = wrapText(ctx, cleanContent, contentWidth, 36, 'Times New Roman')
       contentLines.forEach((line, index) => {
-        ctx.fillText(line, margin, titleHeight + 40 + (index * 36))
+        ctx.fillText(line, margin, titleHeight + 60 + (index * 50)) // Было titleHeight + 40 + (index * 36)
       })
       
-      const contentHeight = titleHeight + 40 + (contentLines.length * 36)
+      const contentHeight = titleHeight + 60 + (contentLines.length * 50)
       
-      // Подпись и печать
-      ctx.font = 'bold 22px "Times New Roman"'
+      // Подпись и печать - УВЕЛИЧЕННЫЙ РАЗМЕР
+      ctx.font = 'bold 36px "Times New Roman"' // Было 22px
       ctx.textAlign = 'right'
-      ctx.fillText(`Начальник ${selectedUnit.toLowerCase()}`, width - margin, contentHeight + 100)
+      ctx.fillText(`Начальник ${selectedUnit.toLowerCase()}`, width - margin, contentHeight + 150) // Было +100
       
-      ctx.font = '20px "Times New Roman"'
-      ctx.fillText('________________', width - margin, contentHeight + 140)
-      ctx.fillText('(подпись)', width - margin, contentHeight + 170)
+      ctx.font = '32px "Times New Roman"' // Было 20px
+      ctx.fillText('________________', width - margin, contentHeight + 200) // Было +140
+      ctx.fillText('(подпись)', width - margin, contentHeight + 240) // Было +170
       
-      // Информация внизу
-      ctx.font = '18px "Times New Roman"'
+      // Информация внизу - УВЕЛИЧЕННЫЙ РАЗМЕР
+      ctx.font = '28px "Times New Roman"' // Было 18px
       ctx.textAlign = 'left'
-      ctx.fillText(`Документ составлен: ${today}`, margin, contentHeight + 220)
-      ctx.fillText('ДЛЯ СЛУЖЕБНОГО ПОЛЬЗОВАНИЯ', margin, contentHeight + 250)
+      ctx.fillText(`Документ составлен: ${today}`, margin, contentHeight + 320) // Было +220
+      ctx.fillText('ДЛЯ СЛУЖЕБНОГО ПОЛЬЗОВАНИЯ', margin, contentHeight + 370) // Было +250
       
-      // Защитный код внизу
-      ctx.font = '14px "Courier New"'
+      // Защитный код внизу - УВЕЛИЧЕННЫЙ РАЗМЕР
+      ctx.font = 'bold 20px "Courier New"' // Было 14px
       ctx.textAlign = 'center'
       ctx.fillStyle = '#666666'
-      ctx.fillText(`Защитный код документа: ${docNumber} | Документ сформирован автоматически`, width / 2, height - 60)
+      ctx.fillText(`Защитный код документа: ${docNumber} | Документ сформирован автоматически`, width / 2, height - 80) // Было -60
       
-      // Рамка документа
+      // Рамка документа - БОЛЕЕ ТОЛСТАЯ
       ctx.strokeStyle = '#000000'
-      ctx.lineWidth = 1
-      ctx.strokeRect(40, 40, width - 80, height - 80)
+      ctx.lineWidth = 2 // Было 1
+      ctx.strokeRect(50, 50, width - 100, height - 100) // Было 40, 40, width - 80, height - 80
 
       // Экспорт
       const link = document.createElement('a')
