@@ -7,39 +7,34 @@ export default function DocumentGenerator() {
   const [selectedTemplate, setSelectedTemplate] = useState(null)
   const [documentTitle, setDocumentTitle] = useState('')
   const [documentContent, setDocumentContent] = useState('')
-  const [documentType, setDocumentType] = useState('приказ')
+  const [documentType, setDocumentType] = useState('объявление')
   const [isGenerating, setIsGenerating] = useState(false)
   
-  const [selectedCity, setSelectedCity] = useState('г. Москва')
-  const [selectedUnit, setSelectedUnit] = useState('Главное командование')
+  const [selectedCity, setSelectedCity] = useState('г. Горки')
+  const [selectedUnit, setSelectedUnit] = useState('Учебный взвод ДПС')
   const [recipientType, setRecipientType] = useState('general')
   const [recipientName, setRecipientName] = useState('')
   const [employeePosition, setEmployeePosition] = useState('')
   const [autoCompleteSuggestions, setAutoCompleteSuggestions] = useState([])
   const [showSuggestions, setShowSuggestions] = useState(false)
 
-  const cities = ['г. Москва', 'г. Санкт-Петербург', 'г. Новосибирск', 'г. Екатеринбург', 'г. Казань']
+  const cities = ['г. Горки', 'г. Новороссийск', 'г. Москва']
   const units = [
-    'Главное командование',
-    'Штаб главного командования',
-    'Центральный аппарат',
-    'Оперативное управление',
-    'Управление безопасности',
-    'Управление кадров',
-    'Управление логистики',
-    'Финансовое управление'
+    'Рота ДПС',
+    'Учебный взвод ДПС',
+    'Главное командование ДПС'
   ]
 
   const recipientTypes = [
-    { id: 'general', name: 'Общий адрес (всем сотрудникам)' },
+    { id: 'general', name: 'Всем сотрудникам' },
     { id: 'department', name: 'Сотрудникам подразделения' },
     { id: 'specific', name: 'Конкретному сотруднику' }
   ]
 
   const autoCompleteData = {
     'отпуск': {
-      title: 'Распоряжение о предоставлении отпуска',
-      content: `На основании трудового законодательства Российской Федерации,\n\nРАСПОРЯЖАЮСЬ:\n\n1. Предоставить [ФИО сотрудника] ежегодный оплачиваемый отпуск с [дата начала] по [дата окончания] продолжительностью [количество] календарных дней.\n2. Оплату отпуска произвести в установленном порядке.\n3. Ответственность за исполнение возложить на начальника отдела кадров.`
+      title: 'Заявление на отпуск',
+      content: `Прошу предоставить мне ежегодный оплачиваемый отпуск с [дата начала] по [дата окончания] продолжительностью [количество] календарных дней.\n\nОснование: Трудовой кодекс РФ, статья 115.`
     },
     'командировка': {
       title: 'Приказ о командировании',
@@ -56,42 +51,23 @@ export default function DocumentGenerator() {
     'назначение': {
       title: 'Приказ о назначении на должность',
       content: `В соответствии со штатным расписанием и на основании решения аттестационной комиссии,\n\nПРИКАЗЫВАЮ:\n\n1. Назначить [ФИО] на должность [название должности] в [название подразделения] с [дата назначения].\n2. Установить оклад в соответствии с должностной инструкцией.\n3. Назначить испытательный срок [продолжительность] месяцев.`
-    },
-    'совещание': {
-      title: 'Распоряжение о проведении совещания',
-      content: `В целях решения оперативных вопросов,\n\nРАСПОРЯЖАЮСЬ:\n\n1. Провести совещание [дата] в [время] в [место проведения].\n2. Повестка дня:\n   - [первый вопрос]\n   - [второй вопрос]\n   - [третий вопрос]\n3. Ответственным за организацию назначить [ФИО ответственного].`
     }
   }
 
-  const securityElements = {
-    secret: { symbol: 'СЕКРЕТНО', text: 'ДОКУМЕНТ С ОГРАНИЧЕННЫМ ДОСТУПОМ' },
-    confidential: { symbol: 'КОНФИДЕНЦИАЛЬНО', text: 'КОНФИДЕНЦИАЛЬНЫЙ ДОКУМЕНТ' },
-    official: { symbol: 'СЛУЖЕБНЫЙ', text: 'СЛУЖЕБНЫЙ ДОКУМЕНТ' },
-    urgent: { symbol: 'СРОЧНО', text: 'СРОЧНЫЙ ДОКУМЕНТ' },
-    original: { symbol: 'ПОДЛИННИК', text: 'ОРИГИНАЛ ДОКУМЕНТА' }
-  }
-
-  const generateSecurityCode = () => {
-    const timestamp = Date.now().toString(36).toUpperCase()
-    const unitCode = selectedUnit === 'Главное командование' ? 'ГК' : 
-                    selectedUnit === 'Штаб главного командования' ? 'ШГК' :
-                    selectedUnit === 'Центральный аппарат' ? 'ЦА' :
-                    selectedUnit === 'Оперативное управление' ? 'ОУ' :
-                    selectedUnit === 'Управление безопасности' ? 'УБ' :
-                    selectedUnit === 'Управление кадров' ? 'УК' :
-                    selectedUnit === 'Управление логистики' ? 'УЛ' :
-                    selectedUnit === 'Финансовое управление' ? 'ФУ' : 'КМ'
+  const generateDocumentNumber = () => {
     const year = new Date().getFullYear()
-    const random = Math.floor(Math.random() * 9999).toString().padStart(4, '0')
-    const checkSum = ((parseInt(random) + unitCode.length) % 100).toString().padStart(2, '0')
-    
-    return `${unitCode}-${year}/${random}-${checkSum}`
+    const unitCode = selectedUnit.includes('Рота') ? 'РД' : 
+                    selectedUnit.includes('Учебный') ? 'УВ' : 'ГК'
+    const cityCode = selectedCity.includes('Горки') ? 'ГК' : 
+                     selectedCity.includes('Новороссийск') ? 'НО' : 'МС'
+    const random = Math.floor(Math.random() * 999).toString().padStart(3, '0')
+    return `${random}${year % 100}-${unitCode}/${cityCode}`
   }
 
   const getRecipientText = () => {
     switch (recipientType) {
       case 'general':
-        return 'Всем сотрудникам Главного командования'
+        return 'Всем сотрудникам'
       case 'department':
         return `Сотрудникам ${selectedUnit}`
       case 'specific':
@@ -127,197 +103,139 @@ export default function DocumentGenerator() {
   const templates = [
     {
       id: 1,
-      name: "Распоряжение о проведении конкурса",
-      type: "конкурс",
-      title: `Распоряжение ${selectedUnit} о проведении конкурса профессионального мастерства`,
-      content: `ГЛАВНОЕ КОМАНДОВАНИЕ
-${selectedUnit.toUpperCase()}
+      name: "Конкурс «Лучший сотрудник»",
+      type: "объявление",
+      title: `Объявление о конкурсе «Лучший сотрудник ДПС»`,
+      content: `МИНИСТЕРСТВО ВНУТРЕННИХ ДЕЛ РОССИЙСКОЙ ФЕДЕРАЦИИ
+${selectedUnit.toUpperCase()} ${selectedCity}
 
-№ ${generateSecurityCode()}
-${selectedCity}
-«___» ___________ ${new Date().getFullYear()} г.
+ОБЪЯВЛЕНИЕ О КОНКУРСЕ
+№ ${generateDocumentNumber()}
 
-РАСПОРЯЖЕНИЕ
+от ${new Date().toLocaleDateString('ru-RU')}
 
-О проведении конкурса профессионального мастерства 
-среди сотрудников Главного командования
+«Конкурс «Лучший сотрудник ДПС ${selectedUnit} ${selectedCity}»»
 
-В целях повышения профессионального уровня личного состава, выявления и поощрения лучших специалистов, а также в соответствии с годовым планом работы Главного командования,
+В целях повышения эффективности служебной деятельности, мотивации личного состава и поощрения лучших сотрудников руководством ${selectedUnit.toLowerCase()} принято решение о проведении ежегодного конкурса профессионального мастерства.
 
-РАСПОРЯЖАЮСЬ:
+КРИТЕРИИ ОЦЕНКИ УЧАСТНИКОВ:
 
-1. Провести конкурс профессионального мастерства среди ${getRecipientText()} в период с 15 января по 31 января ${new Date().getFullYear() + 1} года.
+1. Профессиональное мастерство и знание служебных инструкций
+2. Исполнительность и служебная дисциплина
+3. Результаты оперативно-служебной деятельности
+4. Инициативность и лидерские качества
 
-2. Утвердить состав конкурсной комиссии:
-   - Председатель: [ФИО председателя]
-   - Члены комиссии: [ФИО члена], [ФИО члена], [ФИО члена]
-   - Секретарь: [ФИО секретаря]
+СРОКИ ПРОВЕДЕНИЯ:
 
-3. Основные критерии оценки участников:
-   3.1. Профессиональные знания и навыки.
-   3.2. Качество выполнения служебных обязанностей.
-   3.3. Инициативность и творческий подход.
-   3.4. Результативность работы.
+• Начало: 30 декабря ${new Date().getFullYear()} года в 08:00 (МСК)
+• Окончание: 31 декабря ${new Date().getFullYear()} года в 19:00 (МСК)
 
-4. Победителям конкурса установить следующие награды:
-   - 1 место: денежная премия в размере 500 000 рублей.
-   - 2 место: денежная премия в размере 300 000 рублей.
-   - 3 место: денежная премия в размере 200 000 рублей.
+НАГРАДА ПОБЕДИТЕЛЮ:
 
-5. Финансирование конкурса осуществить за счет средств, предусмотренных в смете Главного командования на ${new Date().getFullYear()} год.
+Денежное вознаграждение в размере 1 000 000 (один миллион) рублей.
 
-6. Контроль за исполнением настоящего распоряжения возложить на заместителя начальника ${selectedUnit}.
+Конкурс проводится в соответствии с планом служебно-боевой подготовки на ${new Date().getFullYear()} год.
 
-ЗАМЕСТИТЕЛЬ НАЧАЛЬНИКА ${selectedUnit.toUpperCase()}
-
-_________________ /________________/
-                  (подпись)
-
-СЛУЖЕБНАЯ ПЕЧАТЬ`,
+Документ составлен: ${new Date().toLocaleDateString('ru-RU')}
+ДЛЯ СЛУЖЕБНОГО ПОЛЬЗОВАНИЯ`,
       year: new Date().getFullYear()
     },
     {
       id: 2,
-      name: "Приказ об организации служебной подготовки",
+      name: "Приказ о служебной подготовке",
       type: "приказ",
-      title: `Приказ ${selectedUnit} об организации служебной подготовки`,
-      content: `ГЛАВНОЕ КОМАНДОВАНИЕ
-${selectedUnit.toUpperCase()}
+      title: `Приказ об организации служебной подготовки`,
+      content: `МИНИСТЕРСТВО ВНУТРЕННИХ ДЕЛ РОССИЙСКОЙ ФЕДЕРАЦИИ
+${selectedUnit.toUpperCase()} ${selectedCity}
 
-№ ${generateSecurityCode()}
-${selectedCity}
-«___» ___________ ${new Date().getFullYear()} г.
+ПРИКАЗ
+№ ${generateDocumentNumber()}
 
-П Р И К А З
+от ${new Date().toLocaleDateString('ru-RU')}
 
-Об организации служебной подготовки 
-в Главном командовании на ${new Date().getFullYear()} год
+«Организация служебной подготовки в ${selectedUnit} ${selectedCity}»
 
-В целях повышения профессионального уровня личного состава, совершенствования служебной подготовки и в соответствии с планом основных мероприятий Главного командования,
+Во исполнение плана служебно-боевой подготовки на ${new Date().getFullYear()} год, ПРИКАЗЫВАЮ:
 
-ПРИКАЗЫВАЮ:
+1. Утвердить план служебной подготовки личного состава на I квартал ${new Date().getFullYear()} года.
+2. Назначить ответственным за организацию служебной подготовки ${selectedUnit.toLowerCase()}.
+3. Провести внеплановую проверку знаний служебных инструкций до 15 января ${new Date().getFullYear()} года.
+4. Обеспечить 100% явку личного состава на занятия по служебной подготовке.
+5. Контроль за исполнением настоящего приказа возложить на ответственного.
 
-1. Утвердить План служебной подготовки ${selectedUnit} на ${new Date().getFullYear()} год (приложение 1).
+Настоящий приказ довести до всего личного состава ${selectedUnit.toLowerCase()}.
 
-2. Провести следующие мероприятия:
-   2.1. Еженедельные занятия по специальной подготовке.
-   2.2. Ежемесячные инструктажи по технике безопасности.
-   2.3. Квартальные учения и тренировки.
-   2.4. Годовая аттестация сотрудников.
-
-3. Начальникам структурных подразделений:
-   3.1. Обеспечить 100% явку личного состава на занятия.
-   3.2. Организовать проведение занятий в соответствии с утвержденным планом.
-   3.3. Представлять отчеты о проведенных занятиях до 5 числа каждого месяца.
-
-4. Учебно-методическому отделу:
-   4.1. Разработать учебные материалы и методические пособия.
-   4.2. Обеспечить контроль качества проведения занятий.
-   4.3. Организовать проверку знаний личного состава.
-
-5. Финансовому управлению:
-   5.1. Обеспечить финансирование мероприятий по служебной подготовке.
-   5.2. Представить смета расходов до 1 декабря текущего года.
-
-6. Контроль за исполнением настоящего приказа возложить на заместителя начальника ${selectedUnit}.
-
-НАЧАЛЬНИК ${selectedUnit.toUpperCase()}
-
-_________________ /________________/
-                  (подпись)
-
-ГЕРБОВАЯ ПЕЧАТЬ ГЛАВНОГО КОМАНДОВАНИЯ`,
+Документ составлен: ${new Date().toLocaleDateString('ru-RU')}
+СЛУЖЕБНЫЙ ДОКУМЕНТ`,
       year: new Date().getFullYear()
     },
     {
       id: 3,
-      name: "Благодарственное письмо сотруднику",
+      name: "Благодарственное письмо",
       type: "благодарность",
-      title: `Благодарственное письмо ${selectedUnit}`,
-      content: `ГЛАВНОЕ КОМАНДОВАНИЕ
-${selectedUnit.toUpperCase()}
-
-№ ${generateSecurityCode()}
-${selectedCity}
-«___» ___________ ${new Date().getFullYear()} г.
+      title: `Благодарственное письмо сотруднику`,
+      content: `МИНИСТЕРСТВО ВНУТРЕННИХ ДЕЛ РОССИЙСКОЙ ФЕДЕРАЦИИ
+${selectedUnit.toUpperCase()} ${selectedCity}
 
 БЛАГОДАРСТВЕННОЕ ПИСЬМО
+№ ${generateDocumentNumber()}
+
+от ${new Date().toLocaleDateString('ru-RU')}
 
 Уважаемый [ФИО сотрудника]!
 
-Руководство ${selectedUnit} выражает Вам искреннюю благодарность за добросовестное выполнение служебных обязанностей, высокий профессионализм и значительный вклад в развитие Главного командования.
+Выражаем Вам искреннюю благодарность за добросовестное исполнение служебных обязанностей, высокий профессионализм и личный вклад в обеспечение правопорядка на территории ${selectedCity}.
 
 Ваша работа отмечена по следующим критериям:
 
-1. Отличные результаты в служебной деятельности за ${new Date().getFullYear()} год.
-2. Ответственное отношение к выполнению поставленных задач.
-3. Проявление инициативы и творческого подхода в работе.
-4. Активное участие в реализации важных проектов.
-5. Наставничество и помощь молодым сотрудникам.
-
-Ваш труд служит примером для всего коллектива и вносит неоценимый вклад в укрепление авторитета Главного командования.
+• Отличные результаты в служебной деятельности в ${new Date().getFullYear()} году
+• Ответственное отношение к выполнению поставленных задач
+• Проявление инициативы и творческого подхода
+• Наставничество и помощь коллегам
 
 За проявленное усердие и достигнутые успехи Вас рекомендовано представить к денежной премии в размере 150 000 рублей.
 
-Желаем Вам дальнейших успехов в служебной деятельности, крепкого здоровья, благополучия и новых профессиональных достижений!
+Желаем Вам дальнейших успехов в службе, крепкого здоровья и благополучия!
 
 С уважением,
 руководство ${selectedUnit}
 
-ЗАМЕСТИТЕЛЬ НАЧАЛЬНИКА ${selectedUnit.toUpperCase()}
-
-_________________ /________________/
-                  (подпись)
-
-СЛУЖЕБНАЯ ПЕЧАТЬ`,
+Документ составлен: ${new Date().toLocaleDateString('ru-RU')}
+ДЛЯ СЛУЖЕБНОГО ПОЛЬЗОВАНИЯ`,
       year: new Date().getFullYear()
     },
     {
       id: 4,
-      name: "Приказ о премировании",
-      type: "премия",
-      title: `Приказ ${selectedUnit} о премировании сотрудников`,
-      content: `ГЛАВНОЕ КОМАНДОВАНИЕ
-${selectedUnit.toUpperCase()}
+      name: "Распоряжение о собрании",
+      type: "распоряжение",
+      title: `Распоряжение о проведении собрания`,
+      content: `МИНИСТЕРСТВО ВНУТРЕННИХ ДЕЛ РОССИЙСКОЙ ФЕДЕРАЦИИ
+${selectedUnit.toUpperCase()} ${selectedCity}
 
-№ ${generateSecurityCode()}
-${selectedCity}
-«___» ___________ ${new Date().getFullYear()} г.
+РАСПОРЯЖЕНИЕ
+№ ${generateDocumentNumber()}
 
-П Р И К А З
+от ${new Date().toLocaleDateString('ru-RU')}
 
-О премировании сотрудников Главного командования
+«О проведении общего собрания ${selectedUnit} ${selectedCity}»
 
-В целях мотивации личного состава к повышению эффективности служебной деятельности, поощрения добросовестного отношения к служебным обязанностям и в соответствии с Положением о премировании,
+Доводим до сведения личного состава ${selectedUnit.toLowerCase()} следующую информацию:
 
-ПРИКАЗЫВАЮ:
+15 января ${new Date().getFullYear() + 1} года в 15:00 в актовом зале состоится общее собрание личного состава.
 
-1. Выплатить премию в размере, указанном в приложении 1, следующим сотрудникам:
+ПОВЕСТКА ДНЯ:
 
-${recipientType === 'specific' && recipientName ? `   1.1. ${recipientName} ${employeePosition ? `- ${employeePosition}` : ''} - 150 000 рублей.` : '   1.1. [ФИО сотрудника] - [сумма] рублей.'}
-${recipientType !== 'specific' ? '   1.2. [ФИО сотрудника] - [сумма] рублей.\n   1.3. [ФИО сотрудника] - [сумма] рублей.' : ''}
+1. Подведение итогов работы за ${new Date().getFullYear()} год.
+2. Обсуждение планов на ${new Date().getFullYear() + 1} год.
+3. Организационные вопросы.
+4. Разное.
 
-2. Основанием для выплаты премии являются:
-   2.1. Достижение высоких показателей в служебной деятельности.
-   2.2. Качественное выполнение поставленных задач в установленные сроки.
-   2.3. Проявление инициативы и творческого подхода в работе.
+ЯВКА ВСЕХ СОТРУДНИКОВ ОБЯЗАТЕЛЬНА.
 
-3. Финансовому управлению:
-   3.1. Произвести выплату премий до 10 числа следующего месяца.
-   3.2. Обеспечить правильность начисления и выплаты.
+С собой иметь служебное удостоверение.
 
-4. Начальнику отдела кадров:
-   4.1. Внести соответствующие записи в трудовые книжки сотрудников.
-   4.2. Оформить необходимую документацию.
-
-5. Контроль за исполнением настоящего приказа возложить на заместителя начальника ${selectedUnit}.
-
-НАЧАЛЬНИК ${selectedUnit.toUpperCase()}
-
-_________________ /________________/
-                  (подпись)
-
-ГЕРБОВАЯ ПЕЧАТЬ`,
+Документ составлен: ${new Date().toLocaleDateString('ru-RU')}
+СЛУЖЕБНЫЙ ДОКУМЕНТ`,
       year: new Date().getFullYear()
     }
   ]
@@ -339,12 +257,11 @@ _________________ /________________/
   }, [documentContent])
 
   useEffect(() => {
-    // Обновляем контент при изменении адресата
     if (selectedTemplate) {
       let updatedContent = selectedTemplate.content
       
       // Обновляем номер документа
-      updatedContent = updatedContent.replace(/№ [A-Z0-9/-]+/, `№ ${generateSecurityCode()}`)
+      updatedContent = updatedContent.replace(/№ [A-Z0-9/-]+/, `№ ${generateDocumentNumber()}`)
       
       // Вставляем информацию об адресате
       updatedContent = insertRecipientInfo(updatedContent)
@@ -371,19 +288,17 @@ _________________ /________________/
     const updatedTemplate = {
       ...template,
       title: template.title
-        .replace('Главное командование', selectedUnit)
-        .replace('г. Москва', selectedCity)
     }
     
     setSelectedTemplate(updatedTemplate)
     setDocumentTitle(updatedTemplate.title)
     
     let updatedContent = template.content
-      .replace(/Главное командование/g, selectedUnit)
-      .replace(/г\. Москва/g, selectedCity)
+      .replace(/Учебный взвод ДПС/g, selectedUnit)
+      .replace(/г\. Горки/g, selectedCity)
     
     // Обновляем номер документа
-    updatedContent = updatedContent.replace(/№ [A-Z0-9/-]+/, `№ ${generateSecurityCode()}`)
+    updatedContent = updatedContent.replace(/№ [A-Z0-9/-]+/, `№ ${generateDocumentNumber()}`)
     
     // Вставляем информацию об адресате
     updatedContent = insertRecipientInfo(updatedContent)
@@ -397,7 +312,7 @@ _________________ /________________/
     setSelectedTemplate(null)
     setDocumentTitle('')
     setDocumentContent('')
-    setDocumentType('приказ')
+    setDocumentType('объявление')
     setRecipientType('general')
     setRecipientName('')
     setEmployeePosition('')
@@ -467,74 +382,9 @@ _________________ /________________/
     return lines
   }
 
-  const drawEmblem = (ctx, x, y, size) => {
-    ctx.save()
-    ctx.translate(x, y)
-    
-    const gold = '#D4AF37'
-    const blue = '#0039A6'
-    const silver = '#C0C0C0'
-    const red = '#B22234'
-    
-    // Внешний круг
-    ctx.fillStyle = blue
-    ctx.beginPath()
-    ctx.arc(0, 0, size * 0.5, 0, Math.PI * 2)
-    ctx.fill()
-    
-    // Внутренний круг
-    ctx.fillStyle = '#FFFFFF'
-    ctx.beginPath()
-    ctx.arc(0, 0, size * 0.45, 0, Math.PI * 2)
-    ctx.fill()
-    
-    // Меч
-    ctx.fillStyle = silver
-    ctx.strokeStyle = '#000000'
-    ctx.lineWidth = 1
-    ctx.beginPath()
-    ctx.moveTo(-size * 0.1, -size * 0.3)
-    ctx.lineTo(size * 0.1, -size * 0.3)
-    ctx.lineTo(size * 0.05, size * 0.3)
-    ctx.lineTo(-size * 0.05, size * 0.3)
-    ctx.closePath()
-    ctx.fill()
-    ctx.stroke()
-    
-    // Лавровый венок
-    ctx.fillStyle = gold
-    ctx.beginPath()
-    ctx.ellipse(0, 0, size * 0.35, size * 0.25, 0, 0, Math.PI * 2)
-    ctx.stroke()
-    
-    // Звезда
-    ctx.fillStyle = red
-    ctx.beginPath()
-    const spikes = 5
-    const outerRadius = size * 0.12
-    const innerRadius = size * 0.05
-    
-    for (let i = 0; i < spikes * 2; i++) {
-      const radius = i % 2 === 0 ? outerRadius : innerRadius
-      const angle = (Math.PI * i) / spikes
-      const x = Math.cos(angle) * radius
-      const y = Math.sin(angle) * radius
-      
-      if (i === 0) {
-        ctx.moveTo(x, y)
-      } else {
-        ctx.lineTo(x, y)
-      }
-    }
-    ctx.closePath()
-    ctx.fill()
-    
-    ctx.restore()
-  }
-
   const addWatermark = (ctx, text, width, height) => {
     ctx.save()
-    ctx.globalAlpha = 0.05
+    ctx.globalAlpha = 0.03
     ctx.fillStyle = '#000000'
     ctx.font = 'bold 280px "Times New Roman"'
     ctx.textAlign = 'center'
@@ -552,66 +402,24 @@ _________________ /________________/
     ctx.restore()
   }
 
-  const addSecurityPattern = (ctx, width, height, securityCode) => {
+  const addSecurityPattern = (ctx, width, height, docNumber) => {
     ctx.save()
-    ctx.globalAlpha = 0.03
+    ctx.globalAlpha = 0.02
     
     // Мелкий повторяющийся текст
-    ctx.font = '16px "Courier New"'
+    ctx.font = '14px "Arial"'
     ctx.fillStyle = '#000000'
-    
-    const codeParts = securityCode.split('/')
-    const baseText = `ГК-${codeParts[0]}/${codeParts[1] || ''}`
     
     for (let x = 60; x < width; x += 200) {
       for (let y = 60; y < height; y += 150) {
         ctx.save()
         ctx.translate(x, y)
         ctx.rotate(Math.PI / 6)
-        ctx.fillText(baseText, 0, 0)
-        ctx.fillText('ГЛАВНОЕ КОМАНДОВАНИЕ', 0, 30)
+        ctx.fillText(docNumber, 0, 0)
+        ctx.fillText('МВД РОССИИ', 0, 20)
+        ctx.fillText(selectedUnit, 0, 40)
         ctx.restore()
       }
-    }
-    
-    ctx.restore()
-  }
-
-  const addMicroprint = (ctx, width, height) => {
-    ctx.save()
-    ctx.globalAlpha = 0.08
-    
-    // Микротекст по краям
-    const microText = 'ГЛАВНОЕ КОМАНДОВАНИЕ ОФИЦИАЛЬНЫЙ ДОКУМЕНТ'
-    ctx.font = '8px Arial'
-    ctx.fillStyle = '#000000'
-    
-    // Верхний край
-    for (let x = 100; x < width - 100; x += 80) {
-      ctx.fillText(microText, x, 30)
-    }
-    
-    // Нижний край
-    for (let x = 100; x < width - 100; x += 80) {
-      ctx.fillText(microText, x, height - 20)
-    }
-    
-    // Левый край
-    for (let y = 100; y < height - 100; y += 80) {
-      ctx.save()
-      ctx.translate(30, y)
-      ctx.rotate(-Math.PI / 2)
-      ctx.fillText(microText, 0, 0)
-      ctx.restore()
-    }
-    
-    // Правый край
-    for (let y = 100; y < height - 100; y += 80) {
-      ctx.save()
-      ctx.translate(width - 30, y)
-      ctx.rotate(Math.PI / 2)
-      ctx.fillText(microText, 0, 0)
-      ctx.restore()
     }
     
     ctx.restore()
@@ -636,20 +444,20 @@ _________________ /________________/
       setIsGenerating(true)
       
       const today = new Date().toLocaleDateString('ru-RU')
-      const securityCode = generateSecurityCode()
+      const docNumber = generateDocumentNumber()
       
       const docTypeText = {
-        'конкурс': 'РАСПОРЯЖЕНИЕ',
-        'приказ': 'П Р И К А З',
+        'объявление': 'ОБЪЯВЛЕНИЕ О КОНКУРСЕ',
+        'приказ': 'ПРИКАЗ',
         'благодарность': 'БЛАГОДАРСТВЕННОЕ ПИСЬМО',
-        'премия': 'П Р И К А З'
+        'распоряжение': 'РАСПОРЯЖЕНИЕ'
       }[documentType] || 'ДОКУМЕНТ'
 
       const canvas = document.createElement('canvas')
       const ctx = canvas.getContext('2d')
       
-      const width = 2480
-      const height = 3508
+      const width = 2100
+      const height = 2970
       
       canvas.width = width
       canvas.height = height
@@ -659,167 +467,118 @@ _________________ /________________/
       ctx.fillRect(0, 0, width, height)
       
       // Водяные знаки и защита
-      addWatermark(ctx, 'ГЛАВНОЕ КОМАНДОВАНИЕ', width, height)
-      addSecurityPattern(ctx, width, height, securityCode)
-      addMicroprint(ctx, width, height)
-      
-      // Добавляем скрытый защитный слой
-      ctx.save()
-      ctx.globalAlpha = 0.02
-      ctx.font = 'bold 140px "Times New Roman"'
-      ctx.fillStyle = '#000000'
-      ctx.textAlign = 'center'
-      ctx.textBaseline = 'middle'
-      ctx.translate(width / 2, height / 2)
-      ctx.rotate(Math.PI / 3)
-      ctx.fillText('СЛУЖЕБНЫЙ ДОКУМЕНТ', 0, 0)
-      ctx.restore()
+      addWatermark(ctx, 'МВД РОССИИ', width, height)
+      addSecurityPattern(ctx, width, height, docNumber)
       
       // Основные поля документа
-      const margin = 180
+      const margin = 150
       const contentWidth = width - (margin * 2)
       
-      // Эмблема Главного командования
-      drawEmblem(ctx, width / 2, 200, 110)
-      
-      // Заголовок организации
+      // Заголовок министерства
       ctx.fillStyle = '#000000'
-      ctx.font = 'bold 36px "Times New Roman"'
+      ctx.font = 'bold 32px "Times New Roman"'
       ctx.textAlign = 'center'
-      ctx.fillText('ГЛАВНОЕ КОМАНДОВАНИЕ', width / 2, 320)
-      ctx.font = 'bold 30px "Times New Roman"'
-      ctx.fillText(selectedUnit.toUpperCase(), width / 2, 370)
+      ctx.fillText('МИНИСТЕРСТВО ВНУТРЕННИХ ДЕЛ РОССИЙСКОЙ ФЕДЕРАЦИИ', width / 2, 180)
+      ctx.font = 'bold 28px "Times New Roman"'
+      ctx.fillText(`${selectedUnit.toUpperCase()} ${selectedCity.toUpperCase()}`, width / 2, 230)
       
       // Линия разделения
       ctx.beginPath()
-      ctx.moveTo(margin, 420)
-      ctx.lineTo(width - margin, 420)
+      ctx.moveTo(margin, 280)
+      ctx.lineTo(width - margin, 280)
       ctx.strokeStyle = '#000000'
-      ctx.lineWidth = 2
+      ctx.lineWidth = 1
       ctx.stroke()
       
-      // Номер документа и город
-      ctx.font = '20px "Times New Roman"'
-      ctx.textAlign = 'left'
-      ctx.fillText(`№ ${securityCode}`, margin, 460)
-      ctx.textAlign = 'right'
-      ctx.fillText(selectedCity, width - margin, 460)
-      
-      ctx.font = '18px "Times New Roman"'
-      ctx.textAlign = 'center'
-      ctx.fillText(`«___» ___________ ${new Date().getFullYear()} г.`, width / 2, 500)
-      
       // Тип документа
-      ctx.font = 'bold 68px "Times New Roman"'
-      ctx.fillText(docTypeText, width / 2, 580)
+      ctx.font = 'bold 36px "Times New Roman"'
+      ctx.fillText(docTypeText, width / 2, 340)
       
-      // Город в заголовке
-      ctx.font = 'bold 26px "Times New Roman"'
-      ctx.fillText(selectedCity.toUpperCase(), width / 2, 640)
+      // Номер документа
+      ctx.font = 'bold 24px "Times New Roman"'
+      ctx.fillText(`№ ${docNumber}`, width / 2, 400)
+      
+      // Дата
+      ctx.font = '20px "Times New Roman"'
+      ctx.fillText(`от ${today}`, width / 2, 450)
       
       // Название документа
-      ctx.font = 'bold 30px "Times New Roman"'
+      ctx.font = 'bold 28px "Times New Roman"'
       ctx.textAlign = 'center'
-      const titleLines = wrapText(ctx, documentTitle, contentWidth, 30, 'Times New Roman')
+      const titleLines = wrapText(ctx, documentTitle, contentWidth, 28, 'Times New Roman')
       titleLines.forEach((line, index) => {
-        ctx.fillText(line, width / 2, 700 + (index * 50))
+        ctx.fillText(`«${line}»`, width / 2, 520 + (index * 40))
       })
       
-      const titleHeight = 700 + (titleLines.length * 50)
+      const titleHeight = 520 + (titleLines.length * 40)
       
       // Содержание документа с заменой адресата
       let finalContent = documentContent
-      if (recipientType === 'specific' && recipientName) {
-        finalContent = finalContent.replace(/\[ФИО сотрудника\]/g, recipientName)
-        finalContent = finalContent.replace(/\[ФИО\]/g, recipientName)
-      }
+      // Убираем лишние части из контента
+      const lines = finalContent.split('\n')
+      const startIndex = lines.findIndex(line => line.includes('В целях') || line.includes('Во исполнение') || line.includes('Уважаемый') || line.includes('Доводим'))
+      const contentStart = startIndex !== -1 ? startIndex : 0
+      const cleanContent = lines.slice(contentStart).join('\n')
+        .replace(/Документ составлен:.*/g, '')
+        .replace(/ДЛЯ СЛУЖЕБНОГО ПОЛЬЗОВАНИЯ/g, '')
+        .replace(/СЛУЖЕБНЫЙ ДОКУМЕНТ/g, '')
+        .replace(/МИНИСТЕРСТВО.*/g, '')
+        .replace(/ОБЪЯВЛЕНИЕ О КОНКУРСЕ.*/g, '')
+        .replace(/ПРИКАЗ.*/g, '')
+        .replace(/БЛАГОДАРСТВЕННОЕ ПИСЬМО.*/g, '')
+        .replace(/РАСПОРЯЖЕНИЕ.*/g, '')
+        .replace(/№.*/g, '')
+        .replace(/от.*/g, '')
+        .replace(/«.*»/g, '')
+        .replace(/\*\*/g, '')
       
       ctx.font = '24px "Times New Roman"'
       ctx.textAlign = 'left'
-      const cleanContent = finalContent
-        .replace(/\*\*/g, '')
-        .replace(/СЛУЖЕБНАЯ ПЕЧАТЬ.*/g, '')
-        .replace(/ГЕРБОВАЯ ПЕЧАТЬ.*/g, '')
-        .replace(/ЗАМЕСТИТЕЛЬ НАЧАЛЬНИКА.*/g, '')
-        .replace(/НАЧАЛЬНИК.*/g, '')
-        .replace(/_________________ \/________________\/\s+\(подпись\)/g, '')
-      
       const contentLines = wrapText(ctx, cleanContent, contentWidth, 24, 'Times New Roman')
       contentLines.forEach((line, index) => {
-        ctx.fillText(line, margin, titleHeight + 60 + (index * 36))
+        ctx.fillText(line, margin, titleHeight + 40 + (index * 36))
       })
       
-      const contentHeight = titleHeight + 60 + (contentLines.length * 36)
+      const contentHeight = titleHeight + 40 + (contentLines.length * 36)
       
-      // Подпись
+      // Подпись и печать
       ctx.font = 'bold 22px "Times New Roman"'
       ctx.textAlign = 'right'
+      ctx.fillText(`Начальник ${selectedUnit.toLowerCase()}`, width - margin, contentHeight + 100)
       
-      if (documentType === 'директива') {
-        ctx.fillText('НАЧАЛЬНИК ГЛАВНОГО КОМАНДОВАНИЯ', width - margin, contentHeight + 120)
-      } else if (documentType === 'приказ' || documentType === 'премия') {
-        ctx.fillText(`НАЧАЛЬНИК ${selectedUnit.toUpperCase()}`, width - margin, contentHeight + 120)
-      } else {
-        ctx.fillText(`ЗАМЕСТИТЕЛЬ НАЧАЛЬНИКА ${selectedUnit.toUpperCase()}`, width - margin, contentHeight + 120)
-      }
+      ctx.font = '20px "Times New Roman"'
+      ctx.fillText('________________', width - margin, contentHeight + 140)
+      ctx.fillText('(подпись)', width - margin, contentHeight + 170)
       
+      // Информация внизу
       ctx.font = '18px "Times New Roman"'
-      ctx.fillText('_________________ /________________/', width - margin, contentHeight + 160)
-      ctx.fillText('(подпись)', width - margin, contentHeight + 190)
-      
-      // Печать
-      ctx.font = 'italic 16px "Times New Roman"'
-      ctx.textAlign = 'center'
-      const sealText = documentType === 'директива' || documentType === 'приказ' || documentType === 'премия' ? 
-                      'ГЕРБОВАЯ ПЕЧАТЬ ГЛАВНОГО КОМАНДОВАНИЯ' : 
-                      'СЛУЖЕБНАЯ ПЕЧАТЬ'
-      ctx.fillText(sealText, width - margin - 100, contentHeight + 240)
-      
-      // Адресат в нижней части
-      ctx.font = '14px "Times New Roman"'
       ctx.textAlign = 'left'
-      ctx.fillStyle = '#333333'
-      ctx.fillText(`Адресат: ${getRecipientText()}`, margin, contentHeight + 280)
+      ctx.fillText(`Документ составлен: ${today}`, margin, contentHeight + 220)
+      ctx.fillText('ДЛЯ СЛУЖЕБНОГО ПОЛЬЗОВАНИЯ', margin, contentHeight + 250)
       
-      // Защитная информация внизу
-      ctx.font = '12px "Courier New"'
+      // Защитный код внизу
+      ctx.font = '14px "Courier New"'
       ctx.textAlign = 'center'
       ctx.fillStyle = '#666666'
-      ctx.fillText(`Защитный код документа: ${securityCode} | Сгенерировано: ${today} | Документ имеет юридическую силу`, width / 2, height - 60)
+      ctx.fillText(`Защитный код документа: ${docNumber} | Документ сформирован автоматически`, width / 2, height - 60)
       
       // Рамка документа
       ctx.strokeStyle = '#000000'
-      ctx.lineWidth = 2
-      ctx.strokeRect(50, 50, width - 100, height - 100)
-      
-      // Угловые элементы
-      ctx.beginPath()
-      ctx.moveTo(margin, 140)
-      ctx.lineTo(margin - 15, 140)
-      ctx.lineTo(margin - 15, 140 - 15)
-      ctx.moveTo(width - margin, 140)
-      ctx.lineTo(width - margin + 15, 140)
-      ctx.lineTo(width - margin + 15, 140 - 15)
-      ctx.moveTo(margin, height - 140)
-      ctx.lineTo(margin - 15, height - 140)
-      ctx.lineTo(margin - 15, height - 140 + 15)
-      ctx.moveTo(width - margin, height - 140)
-      ctx.lineTo(width - margin + 15, height - 140)
-      ctx.lineTo(width - margin + 15, height - 140 + 15)
-      ctx.stroke()
+      ctx.lineWidth = 1
+      ctx.strokeRect(40, 40, width - 80, height - 80)
 
       // Экспорт
       const link = document.createElement('a')
       const safeUnitName = selectedUnit.replace(/[^a-zA-ZА-Яа-я0-9]/g, '_')
-      const safeCode = securityCode.replace(/\//g, '-')
-      link.download = `Документ_ГК_${safeUnitName}_${safeCode}.png`
+      const safeCode = docNumber.replace(/\//g, '-')
+      link.download = `Документ_${safeUnitName}_${safeCode}.png`
       link.href = canvas.toDataURL('image/png')
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
 
       setIsGenerating(false)
-      alert(`Документ успешно сохранен с защитным кодом!\nАдресат: ${getRecipientText()}`)
+      alert(`Документ успешно сохранен!\n${selectedUnit}, ${selectedCity}`)
 
     } catch (error) {
       console.error('Ошибка:', error)
@@ -844,20 +603,6 @@ _________________ /________________/
     }, 0)
   }
 
-  const addSecurityElement = (element) => {
-    const textarea = document.getElementById('documentContent')
-    if (!textarea) return
-    
-    const start = textarea.selectionStart
-    const newText = documentContent.substring(0, start) + element + documentContent.substring(start)
-    setDocumentContent(newText)
-    
-    setTimeout(() => {
-      textarea.focus()
-      textarea.setSelectionRange(start + element.length, start + element.length)
-    }, 0)
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-4 md:p-8">
       <header className="mb-8 text-center">
@@ -867,10 +612,10 @@ _________________ /________________/
           </div>
           <div>
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-              Генератор служебных документов Главного командования
+              Генератор служебных документов ДПС
             </h1>
             <p className="text-gray-700">
-              Официальное оформление документов с защитой от подделки
+              Официальное оформление документов МВД России
             </p>
           </div>
         </div>
@@ -881,7 +626,7 @@ _________________ /________________/
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-800 mb-3">
-                Город расположения
+                Город
               </label>
               <div className="flex flex-wrap gap-2">
                 {cities.map((city) => (
@@ -903,15 +648,17 @@ _________________ /________________/
               <label className="block text-sm font-medium text-gray-800 mb-3">
                 Подразделение
               </label>
-              <select
-                value={selectedUnit}
-                onChange={(e) => handleUnitChange(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-800"
-              >
+              <div className="flex flex-wrap gap-2">
                 {units.map((unit) => (
-                  <option key={unit} value={unit}>{unit}</option>
+                  <button
+                    key={unit}
+                    onClick={() => handleUnitChange(unit)}
+                    className={`px-4 py-2 rounded-lg transition-all ${selectedUnit === unit ? 'bg-green-700 text-white shadow-md' : 'bg-gray-100 text-gray-800 hover:bg-gray-200 border border-gray-300'}`}
+                  >
+                    {unit}
+                  </button>
                 ))}
-              </select>
+              </div>
               <p className="mt-2 text-sm text-gray-600">
                 Выбрано: <span className="font-semibold">{selectedUnit}</span>
               </p>
@@ -942,7 +689,7 @@ _________________ /________________/
                       value={recipientName}
                       onChange={(e) => setRecipientName(e.target.value)}
                       className="w-full px-3 py-2 rounded-lg border border-gray-300 bg-white text-gray-800"
-                      placeholder="Например: Иванов Иван Иванович"
+                      placeholder="Иванов Иван Иванович"
                     />
                   </div>
                   <div>
@@ -954,7 +701,7 @@ _________________ /________________/
                       value={employeePosition}
                       onChange={(e) => setEmployeePosition(e.target.value)}
                       className="w-full px-3 py-2 rounded-lg border border-gray-300 bg-white text-gray-800"
-                      placeholder="Например: старший специалист"
+                      placeholder="старший инспектор"
                     />
                   </div>
                   <button
@@ -966,10 +713,6 @@ _________________ /________________/
                   </button>
                 </div>
               )}
-              
-              <p className="mt-2 text-sm text-gray-600">
-                Адресат: <span className="font-semibold">{getRecipientText()}</span>
-              </p>
             </div>
           </div>
         </div>
@@ -998,7 +741,7 @@ _________________ /________________/
                 Генерация...
               </>
             ) : (
-              'Сохранить с защитой'
+              'Сохранить документ'
             )}
           </button>
         </div>
@@ -1019,8 +762,6 @@ _________________ /________________/
               const templateWithLocation = {
                 ...template,
                 title: template.title
-                  .replace('Главное командование', selectedUnit)
-                  .replace('г. Москва', selectedCity)
               }
               
               return (
@@ -1033,7 +774,7 @@ _________________ /________________/
                     <div>
                       <h3 className="text-2xl font-bold text-gray-900 mb-3">{template.name}</h3>
                       <div className="flex items-center gap-2">
-                        <span className={`inline-block px-4 py-2 rounded-full text-sm font-semibold ${template.type === 'приказ' ? 'bg-red-50 text-red-800 border border-red-200' : template.type === 'конкурс' ? 'bg-blue-50 text-blue-800 border border-blue-200' : template.type === 'благодарность' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-purple-50 text-purple-800 border border-purple-200'}`}>
+                        <span className={`inline-block px-4 py-2 rounded-full text-sm font-semibold ${template.type === 'объявление' ? 'bg-blue-50 text-blue-800 border border-blue-200' : template.type === 'приказ' ? 'bg-red-50 text-red-800 border border-red-200' : template.type === 'благодарность' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-purple-50 text-purple-800 border border-purple-200'}`}>
                           {template.type.toUpperCase()}
                         </span>
                         <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm">
@@ -1041,7 +782,7 @@ _________________ /________________/
                         </span>
                       </div>
                     </div>
-                    <div className="text-4xl opacity-80">{template.type === 'благодарность' ? '👤' : '📄'}</div>
+                    <div className="text-4xl opacity-80">📄</div>
                   </div>
                   <div className="mb-4">
                     <p className="text-sm text-gray-500 mb-1">Подразделение:</p>
@@ -1138,7 +879,7 @@ _________________ /________________/
                             value={employeePosition}
                             onChange={(e) => setEmployeePosition(e.target.value)}
                             className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl text-lg bg-white shadow-sm"
-                            placeholder="старший специалист"
+                            placeholder="старший инспектор"
                           />
                         </div>
                         <button
@@ -1150,10 +891,6 @@ _________________ /________________/
                         </button>
                       </div>
                     )}
-                    
-                    <p className="mt-3 text-gray-600">
-                      <span className="font-medium">Текущий адресат:</span> {getRecipientText()}
-                    </p>
                   </div>
 
                   <div>
@@ -1165,10 +902,10 @@ _________________ /________________/
                       onChange={(e) => setDocumentType(e.target.value)}
                       className="w-full px-5 py-3 border-2 border-gray-300 rounded-xl text-lg bg-white shadow-sm"
                     >
+                      <option value="объявление">Объявление</option>
                       <option value="приказ">Приказ</option>
-                      <option value="конкурс">Распоряжение о конкурсе</option>
-                      <option value="благодарность">Благодарственное письмо</option>
-                      <option value="премия">Приказ о премировании</option>
+                      <option value="благодарность">Благодарность</option>
+                      <option value="распоряжение">Распоряжение</option>
                     </select>
                   </div>
 
@@ -1190,33 +927,12 @@ _________________ /________________/
                       <label className="block text-lg font-semibold text-gray-800 mb-2">
                         Содержание документа
                       </label>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={handleBoldText}
-                          className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-bold text-gray-800 shadow-sm border border-gray-300"
-                        >
-                          Жирный текст
-                        </button>
-                        <div className="relative group">
-                          <button className="px-4 py-2 bg-blue-100 hover:bg-blue-200 rounded-lg text-blue-700 shadow-sm border border-blue-300">
-                            Защита
-                          </button>
-                          <div className="absolute hidden group-hover:block bg-white shadow-xl rounded-lg p-2 z-10 mt-1">
-                            <div className="flex gap-2 flex-wrap">
-                              {Object.entries(securityElements).map(([key, value]) => (
-                                <button
-                                  key={key}
-                                  onClick={() => addSecurityElement(value.symbol)}
-                                  className="p-2 hover:bg-gray-100 rounded border border-gray-200"
-                                  title={value.text}
-                                >
-                                  {value.symbol}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                      <button
+                        onClick={handleBoldText}
+                        className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-bold text-gray-800 shadow-sm border border-gray-300"
+                      >
+                        Жирный текст
+                      </button>
                     </div>
                     
                     <textarea
@@ -1242,9 +958,6 @@ _________________ /________________/
                             </button>
                           ))}
                         </div>
-                        <p className="text-sm text-blue-600 mt-2">
-                          Начните вводить "отпуск", "благодарность" и т.д.
-                        </p>
                       </div>
                     )}
                   </div>
@@ -1258,15 +971,12 @@ _________________ /________________/
                       {isGenerating ? (
                         <>
                           <span className="animate-spin inline-block mr-3">⏳</span>
-                          Генерация защищенного документа...
+                          Генерация документа...
                         </>
                       ) : (
-                        'Сохранить документ с защитой'
+                        'Сохранить документ'
                       )}
                     </button>
-                    <p className="mt-4 text-center text-gray-600 text-sm">
-                      Документ будет содержать защитный код, водяные знаки и электронную подпись
-                    </p>
                   </div>
                 </div>
               </div>
@@ -1280,11 +990,6 @@ _________________ /________________/
                     <p className="text-gray-600">
                       {selectedUnit}, {selectedCity}
                     </p>
-                    <div className="flex gap-1">
-                      <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded border border-blue-200">ОРИГИНАЛ</span>
-                      <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded border border-green-200">ПОДПИСАНО</span>
-                      <span className="text-xs px-2 py-1 bg-red-100 text-red-700 rounded border border-red-200">ЗАЩИЩЕНО</span>
-                    </div>
                   </div>
                   <p className="mt-2 text-gray-600">
                     <span className="font-medium">Адресат:</span> {getRecipientText()}
@@ -1293,95 +998,102 @@ _________________ /________________/
                 
                 <div className="bg-gray-100 border-2 border-gray-300 rounded-2xl p-8 min-h-[700px]">
                   <div className="bg-white rounded-xl p-12 shadow-inner h-full overflow-auto relative">
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-5">
-                      <div className="text-9xl font-bold text-gray-400 rotate-45">ГК</div>
-                    </div>
-                    
-                    <div className="text-center mb-12 relative z-10">
-                      <div className="flex justify-center mb-8">
-                        <div className="relative">
-                          <div className="w-32 h-32 bg-gradient-to-b from-blue-50 to-blue-100 border-4 border-blue-300 rounded-full flex items-center justify-center shadow-lg">
-                            <div className="text-4xl font-bold text-blue-800">ГК</div>
-                          </div>
-                        </div>
-                      </div>
-                      
+                    <div className="text-center mb-12">
                       <div className="space-y-3 mb-8">
-                        <h2 className="text-2xl font-bold text-gray-900 tracking-wide">ГЛАВНОЕ КОМАНДОВАНИЕ</h2>
-                        <h3 className="text-xl font-bold text-gray-800">{selectedUnit.toUpperCase()}</h3>
-                        <h4 className="text-lg font-medium text-gray-700">{selectedCity.toUpperCase()}</h4>
+                        <h2 className="text-2xl font-bold text-gray-900 tracking-wide">МИНИСТЕРСТВО ВНУТРЕННИХ ДЕЛ РОССИЙСКОЙ ФЕДЕРАЦИИ</h2>
+                        <h3 className="text-xl font-bold text-gray-800">{selectedUnit.toUpperCase()} {selectedCity.toUpperCase()}</h3>
                       </div>
                       
                       <div className="relative py-6">
                         <div className="absolute left-0 right-0 top-1/2 h-0.5 bg-gradient-to-r from-transparent via-gray-400 to-transparent"></div>
                         <div className="relative bg-white px-8 inline-block">
                           <h1 className="text-3xl font-bold text-gray-900 tracking-wider">
-                            {documentType === 'конкурс' ? 'РАСПОРЯЖЕНИЕ' : 
-                             documentType === 'приказ' ? 'П Р И К А З' :
+                            {documentType === 'объявление' ? 'ОБЪЯВЛЕНИЕ О КОНКУРСЕ' : 
+                             documentType === 'приказ' ? 'ПРИКАЗ' :
                              documentType === 'благодарность' ? 'БЛАГОДАРСТВЕННОЕ ПИСЬМО' : 
-                             'П Р И К А З'}
+                             'РАСПОРЯЖЕНИЕ'}
                           </h1>
                         </div>
                       </div>
                     </div>
 
-                    <div className="text-center mb-12 space-y-4 relative z-10">
+                    <div className="text-center mb-12 space-y-4">
                       <div className="inline-block px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg">
                         <p className="text-lg text-blue-700 font-mono">
-                          № {generateSecurityCode()}
+                          № {generateDocumentNumber()}
                         </p>
                       </div>
                       <p className="text-lg text-gray-600">
-                        «{new Date().toLocaleDateString('ru-RU')}» {selectedCity}
+                        от {new Date().toLocaleDateString('ru-RU')}
                       </p>
                     </div>
 
                     {documentTitle && (
-                      <div className="mb-10 relative z-10">
+                      <div className="mb-10">
                         <h2 className="text-2xl font-bold text-gray-800 text-center border-b-2 border-blue-200 pb-4">
-                          {documentTitle}
+                          «{documentTitle}»
                         </h2>
-                        <p className="text-center text-gray-600 mt-2">
-                          Адресат: {getRecipientText()}
-                        </p>
                       </div>
                     )}
 
                     {documentContent && (
-                      <div className="text-gray-700 text-lg leading-relaxed whitespace-pre-line mb-16 relative z-10 font-serif">
-                        {documentContent.split('**').map((text, index) => (
-                          index % 2 === 1 ? (
-                            <strong key={index} className="font-bold text-gray-900">{text}</strong>
-                          ) : (
-                            text
+                      <div className="text-gray-700 text-lg leading-relaxed whitespace-pre-line mb-16 font-serif">
+                        {documentContent.split('\n').map((line, index) => {
+                          // Убираем лишние части из отображения в превью
+                          if (line.includes('МИНИСТЕРСТВО') || 
+                              line.includes('ОБЪЯВЛЕНИЕ О КОНКУРСЕ') ||
+                              line.includes('ПРИКАЗ') ||
+                              line.includes('БЛАГОДАРСТВЕННОЕ ПИСЬМО') ||
+                              line.includes('РАСПОРЯЖЕНИЕ') ||
+                              line.includes('№ ') ||
+                              line.includes('от ') ||
+                              line.includes('Документ составлен:') ||
+                              line.includes('ДЛЯ СЛУЖЕБНОГО ПОЛЬЗОВАНИЯ') ||
+                              line.includes('СЛУЖЕБНЫЙ ДОКУМЕНТ')) {
+                            return null
+                          }
+                          
+                          // Пропускаем пустые строки после фильтрации
+                          if (line.trim() === '') {
+                            return <br key={index} />
+                          }
+                          
+                          return (
+                            <p key={index} className="mb-3">
+                              {line.split('**').map((text, idx) => (
+                                idx % 2 === 1 ? (
+                                  <strong key={idx} className="font-bold text-gray-900">{text}</strong>
+                                ) : (
+                                  text
+                                )
+                              ))}
+                            </p>
                           )
-                        ))}
+                        })}
                       </div>
                     )}
 
-                    <div className="mt-20 pt-12 border-t-2 border-gray-300 relative z-10">
-                      <div className="flex justify-between items-end">
-                        <div className="relative">
-                          <div className="w-32 h-32 border-2 border-gray-400 rounded-full flex items-center justify-center bg-white">
-                            <div className="text-center">
-                              <p className="text-sm font-bold text-gray-700">ПЕЧАТЬ</p>
-                              <p className="text-xs text-gray-600 mt-1">ГЛАВНОГО КОМАНДОВАНИЯ</p>
-                              <p className="text-xs text-gray-600 mt-1">{new Date().getFullYear()}</p>
-                            </div>
-                          </div>
-                        </div>
-                        
+                    <div className="mt-20 pt-12 border-t-2 border-gray-300">
+                      <div className="flex justify-end">
                         <div className="text-right">
                           <p className="text-xl font-bold text-gray-900 mb-12">
-                            {documentType === 'благодарность' ? 'ЗАМЕСТИТЕЛЬ НАЧАЛЬНИКА' : 'НАЧАЛЬНИК'} {selectedUnit.toUpperCase()}
+                            Начальник {selectedUnit.toLowerCase()}
                           </p>
                           <div className="mb-4">
                             <div className="w-64 h-0.5 bg-gray-900 mb-2"></div>
                             <p className="text-gray-600 text-sm">(подпись)</p>
                           </div>
-                          <p className="text-lg font-semibold text-gray-800">________________</p>
                         </div>
                       </div>
+                    </div>
+                    
+                    <div className="mt-8 pt-8 border-t border-gray-300">
+                      <p className="text-gray-600">
+                        Документ составлен: {new Date().toLocaleDateString('ru-RU')}
+                      </p>
+                      <p className="text-gray-600 font-semibold">
+                        ДЛЯ СЛУЖЕБНОГО ПОЛЬЗОВАНИЯ
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -1395,23 +1107,18 @@ _________________ /________________/
         <div className="max-w-4xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-center mb-6">
             <div className="mb-4 md:mb-0">
-              <p className="text-gray-700 font-medium">Генератор служебных документов Главного командования</p>
-              <p className="text-gray-600 text-sm mt-1">Версия 2.0 • Защищенные документы {new Date().getFullYear()}</p>
-              <p className="text-gray-500 text-xs mt-1">Разработано для служебного пользования</p>
+              <p className="text-gray-700 font-medium">Генератор служебных документов МВД России</p>
+              <p className="text-gray-600 text-sm mt-1">ДПС {new Date().getFullYear()}</p>
             </div>
             <div className="flex items-center">
               <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-blue-800 rounded-full flex items-center justify-center mr-3">
-                <span className="text-white font-bold">ГК</span>
+                <span className="text-white font-bold">МВД</span>
               </div>
               <div>
-                <p className="text-gray-700 font-medium">Главное командование</p>
-                <p className="text-gray-600 text-sm">Документы {new Date().getFullYear()} г.</p>
+                <p className="text-gray-700 font-medium">Дорожно-патрульная служба</p>
+                <p className="text-gray-600 text-sm">{selectedUnit}, {selectedCity}</p>
               </div>
             </div>
-          </div>
-          <div className="text-gray-500 text-sm">
-            <p>Все документы защищены от подделки уникальными кодами и водяными знаками</p>
-            <p className="mt-2">Текущая конфигурация: {selectedUnit}, {selectedCity} • Адресат: {getRecipientText()}</p>
           </div>
         </div>
       </footer>
