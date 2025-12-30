@@ -1,13 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 
-export default function Home() {
+export default function DocumentGenerator() {
   const [activeTab, setActiveTab] = useState('templates')
   const [selectedTemplate, setSelectedTemplate] = useState(null)
   const [documentTitle, setDocumentTitle] = useState('')
   const [documentContent, setDocumentContent] = useState('')
   const [documentType, setDocumentType] = useState('конкурс')
+  const [isGenerating, setIsGenerating] = useState(false)
 
   // Шаблоны документов
   const templates = [
@@ -105,7 +106,8 @@ export default function Home() {
   }
 
   // Функция для переноса текста
-  const wrapText = (context, text, maxWidth, fontSize) => {
+  const wrapText = (context, text, maxWidth, fontSize, fontFamily = 'Arial') => {
+    context.font = `${fontSize}px ${fontFamily}`
     const words = text.split(' ')
     const lines = []
     let currentLine = words[0]
@@ -124,9 +126,140 @@ export default function Home() {
     return lines
   }
 
+  // Функция для рисования российского герба
+  const drawRussianCoatOfArms = (ctx, x, y, size) => {
+    // Сохраняем состояние контекста
+    ctx.save()
+    
+    // Устанавливаем начальную позицию
+    ctx.translate(x, y)
+    
+    // Основной цвет - золотой
+    ctx.fillStyle = '#FFD700'
+    ctx.strokeStyle = '#000000'
+    ctx.lineWidth = 3
+
+    // Рисуем двуглавого орла
+    // Тело орла
+    ctx.beginPath()
+    ctx.ellipse(0, 0, size * 0.4, size * 0.3, 0, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.stroke()
+
+    // Левая голова
+    ctx.beginPath()
+    ctx.ellipse(-size * 0.25, -size * 0.1, size * 0.1, size * 0.15, 0.3, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.stroke()
+
+    // Правая голова
+    ctx.beginPath()
+    ctx.ellipse(size * 0.25, -size * 0.1, size * 0.1, size * 0.15, -0.3, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.stroke()
+
+    // Короны
+    [ -size * 0.25, 0, size * 0.25 ].forEach((cx, index) => {
+      ctx.fillStyle = '#FFD700'
+      ctx.beginPath()
+      // Основа короны
+      ctx.rect(cx - size * 0.08, -size * 0.25, size * 0.16, size * 0.08)
+      ctx.fill()
+      ctx.stroke()
+      
+      // Зубцы короны
+      for (let i = 0; i < 5; i++) {
+        const px = cx - size * 0.06 + (i * size * 0.03)
+        ctx.beginPath()
+        ctx.moveTo(px, -size * 0.25)
+        ctx.lineTo(px + size * 0.015, -size * 0.3)
+        ctx.lineTo(px + size * 0.03, -size * 0.25)
+        ctx.fill()
+        ctx.stroke()
+      }
+    })
+
+    // Скипетр
+    ctx.fillStyle = '#FFD700'
+    ctx.beginPath()
+    ctx.roundRect(size * 0.15, size * 0.05, size * 0.05, size * 0.4, 5)
+    ctx.fill()
+    ctx.stroke()
+    
+    // Держава
+    ctx.beginPath()
+    ctx.roundRect(-size * 0.2, size * 0.05, size * 0.05, size * 0.4, 5)
+    ctx.fill()
+    ctx.stroke()
+    
+    // Крест на скипетре
+    ctx.beginPath()
+    ctx.moveTo(size * 0.175, -size * 0.35)
+    ctx.lineTo(size * 0.175, -size * 0.45)
+    ctx.moveTo(size * 0.15, -size * 0.4)
+    ctx.lineTo(size * 0.2, -size * 0.4)
+    ctx.stroke()
+
+    // Крест на державе
+    ctx.beginPath()
+    ctx.arc(-size * 0.175, -size * 0.4, size * 0.03, 0, Math.PI * 2)
+    ctx.moveTo(-size * 0.175, -size * 0.43)
+    ctx.lineTo(-size * 0.175, -size * 0.37)
+    ctx.moveTo(-size * 0.2, -size * 0.4)
+    ctx.lineTo(-size * 0.15, -size * 0.4)
+    ctx.stroke()
+
+    // Щит на груди
+    ctx.fillStyle = '#FF0000'
+    ctx.beginPath()
+    ctx.roundRect(-size * 0.08, -size * 0.02, size * 0.16, size * 0.2, 5)
+    ctx.fill()
+    ctx.stroke()
+
+    // Всадник на щите (упрощенный)
+    ctx.fillStyle = '#FFFFFF'
+    // Конь
+    ctx.beginPath()
+    ctx.ellipse(0, size * 0.04, size * 0.06, size * 0.04, 0, 0, Math.PI * 2)
+    ctx.fill()
+    // Всадник
+    ctx.beginPath()
+    ctx.arc(0, -size * 0.02, size * 0.03, 0, Math.PI * 2)
+    ctx.fill()
+    // Копье
+    ctx.beginPath()
+    ctx.moveTo(0, -size * 0.05)
+    ctx.lineTo(0, -size * 0.15)
+    ctx.stroke()
+
+    // Лапы
+    const drawClaw = (cx, cy) => {
+      ctx.beginPath()
+      ctx.moveTo(cx, cy)
+      ctx.lineTo(cx - size * 0.05, cy + size * 0.15)
+      ctx.lineTo(cx + size * 0.05, cy + size * 0.15)
+      ctx.closePath()
+      ctx.fill()
+      ctx.stroke()
+    }
+
+    drawClaw(-size * 0.2, size * 0.15)
+    drawClaw(0, size * 0.15)
+    drawClaw(size * 0.2, size * 0.15)
+
+    // Восстанавливаем состояние контекста
+    ctx.restore()
+  }
+
   // Экспорт документа как изображение
   const exportDocument = async () => {
     try {
+      // Проверяем поддержку Canvas
+      if (!document.createElement('canvas').getContext) {
+        alert('Ваш браузер не поддерживает создание изображений. Попробуйте другой браузер.')
+        return
+      }
+      
       if (!documentTitle.trim()) {
         alert('Введите название документа')
         return
@@ -136,9 +269,8 @@ export default function Home() {
         return
       }
 
-      // Показываем сообщение о начале генерации
-      alert('Генерируем изображение... Пожалуйста, подождите.')
-
+      setIsGenerating(true)
+      
       const today = new Date().toLocaleDateString('ru-RU')
       const docNumber = `${today.replace(/\D/g, '')}-УВ/Г`
       
@@ -161,7 +293,370 @@ export default function Home() {
       canvas.height = height
       
       // Заливаем белым фоном
-      ctx.fillStyle = 'white'
+      ctx.fillStyle = '#ffffff'
+      ctx.fillRect(0, 0, width, height)
+      
+      // Отступы
+      const margin = 200
+      const contentWidth = width - (margin * 2)
+      
+      // Рисуем российский герб в центре шапки
+      drawRussianCoatOfArms(ctx, width / 2, 180, 120)
+      
+      // Название организации под гербом
+      ctx.fillStyle = '#000000'
+      ctx.font = 'bold 42px Times New Roman'
+      ctx.textAlign = 'center'
+      ctx.fillText('ГОСУДАРСТВЕННАЯ СЛУЖБА', width / 2, 320)
+      ctx.fillText('УЧЕБНЫЙ ВЗВОД г. ГОРКИ', width / 2, 370)
+      
+      // Разделительная линия
+      ctx.beginPath()
+      ctx.moveTo(margin, 420)
+      ctx.lineTo(width - margin, 420)
+      ctx.strokeStyle = '#000000'
+      ctx.lineWidth = 2
+      ctx.stroke()
+      
+      // Тип документа
+      ctx.font = 'bold 72px Times New Roman'
+      ctx.fillText(docTypeText, width / 2, 520)
+      
+      // Номер документа
+      ctx.font = 'italic 36px Arial'
+      ctx.fillText(`№ ${docNumber}`, width / 2, 590)
+      
+      // Дата
+      ctx.font = '36px Arial'
+      ctx.fillText(`«${today}» г. Горки`, width / 2, 640)
+      
+      // Заголовок документа
+      ctx.font = 'bold 52px Times New Roman'
+      ctx.textAlign = 'left'
+      const titleLines = wrapText(ctx, documentTitle, contentWidth, 52, 'Times New Roman')
+      titleLines.forEach((line, index) => {
+        ctx.fillText(line, margin, 740 + (index * 70))
+      })
+      
+      // Содержимое документа
+      const titleHeight = 740 + (titleLines.length * 70)
+      ctx.font = '36px Times New Roman'
+      const contentLines = wrapText(ctx, documentContent.replace(/\*\*/g, ''), contentWidth, 36, 'Times New Roman')
+      contentLines.forEach((line, index) => {
+        ctx.fillText(line, margin, titleHeight + 100 + (index * 50))
+      })
+      
+      // Подпись
+      const contentHeight = titleHeight + 100 + (contentLines.length * 50)
+      ctx.font = 'bold 36px Times New Roman'
+      ctx.fillText('Руководитель учебного взвода', width - margin - 400, contentHeight + 150)
+      
+      ctx.beginPath()
+      ctx.moveTo(width - margin - 400, contentHeight + 180)
+      ctx.lineTo(width - margin, contentHeight + 180)
+      ctx.stroke()
+      
+      ctx.font = 'italic 32px Arial'
+      ctx.fillText('(подпись)', width - margin - 300, contentHeight + 220)
+      ctx.fillText('И.И. Иванов', width - margin - 300, contentHeight + 260)
+      
+      // Печать
+      ctx.beginPath()
+      ctx.arc(width - margin - 100, contentHeight + 250, 60, 0, Math.PI * 2)
+      ctx.strokeStyle = '#FF0000'
+      ctx.lineWidth = 3
+      ctx.stroke()
+      
+      ctx.font = 'bold 20px Arial'
+      ctx.fillStyle = '#FF0000'
+      ctx.textAlign = 'center'
+      ctx.fillText('ПЕЧАТЬ', width - margin - 100, contentHeight + 250)
+      ctx.fillText('УЧЕБНОГО ВЗВОДА', width - margin - 100, contentHeight + 275)
+
+      // Создаем ссылку для скачивания
+      const link = document.createElement('a')
+      link.download = `Документ_${docNumber}.png`
+      link.href = canvas.toDataURL('image/png')
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+
+      setIsGenerating(false)
+      alert('Документ успешно сохранен!')
+
+    } catch (error) {
+      console.error('Ошибка при генерации документа:', error)
+      alert('Произошла ошибка при создании документа. Пожалуйста, попробуйте еще раз.')
+      setIsGenerating(false)
+    }
+  }
+
+  // Вспомогательная функция для обработки жирного текста в редакторе
+  const handleBoldText = () => {
+    const textarea = document.getElementById('documentContent')
+    const start = textarea.selectionStart
+    const end = textarea.selectionEnd
+    const selectedText = documentContent.substring(start, end)
+    const newText = documentContent.substring(0, start) + '**' + selectedText + '**' + documentContent.substring(end)
+    setDocumentContent(newText)
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-4 md:p-8">
+      <header className="mb-8">
+        <h1 className="text-3xl md:text-4xl font-bold text-center text-gray-800 mb-2">
+          📄 Генератор служебных документов
+        </h1>
+        <p className="text-center text-gray-600">
+          Создавайте официальные документы с российским гербом
+        </p>
+      </header>
+
+      <main className="max-w-6xl mx-auto">
+        {/* Навигация */}
+        <div className="flex flex-wrap gap-4 mb-8">
+          <button
+            onClick={() => setActiveTab('templates')}
+            className={`px-6 py-3 rounded-lg font-medium transition-colors ${activeTab === 'templates' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
+          >
+            📁 Шаблоны документов
+          </button>
+          <button
+            onClick={() => setActiveTab('editor')}
+            className={`px-6 py-3 rounded-lg font-medium transition-colors ${activeTab === 'editor' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
+          >
+            ✏️ Редактор документа
+          </button>
+          <button
+            onClick={exportDocument}
+            disabled={isGenerating}
+            className={`px-6 py-3 rounded-lg font-medium transition-colors ${isGenerating ? 'bg-gray-400' : 'bg-green-600 hover:bg-green-700 text-white'}`}
+          >
+            {isGenerating ? '🔄 Генерация...' : '💾 Сохранить как PNG'}
+          </button>
+        </div>
+
+        {/* Шаблоны документов */}
+        {activeTab === 'templates' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+            <button
+              onClick={createNewDocument}
+              className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow border-2 border-dashed border-gray-300 hover:border-blue-500 flex flex-col items-center justify-center h-64"
+            >
+              <div className="text-5xl mb-4">➕</div>
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">Создать новый документ</h3>
+              <p className="text-gray-600 text-center">Начните с чистого листа</p>
+            </button>
+
+            {templates.map((template) => (
+              <div
+                key={template.id}
+                className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow cursor-pointer border border-gray-200 hover:border-blue-500"
+                onClick={() => loadTemplate(template)}
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <h3 className="text-xl font-semibold text-gray-800 mb-2">{template.name}</h3>
+                    <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${template.type === 'конкурс' ? 'bg-yellow-100 text-yellow-800' : template.type === 'приказ' ? 'bg-red-100 text-red-800' : template.type === 'объявление' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
+                      {template.type}
+                    </span>
+                  </div>
+                  <div className="text-3xl">{template.name.charAt(0)}</div>
+                </div>
+                <p className="text-gray-600 line-clamp-3">{template.content.substring(0, 150)}...</p>
+                <button className="mt-4 text-blue-600 font-medium hover:text-blue-800">
+                  Использовать шаблон →
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Редактор документа */}
+        {activeTab === 'editor' && (
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Левая колонка - форма */}
+              <div className="lg:col-span-1 space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Тип документа
+                  </label>
+                  <select
+                    value={documentType}
+                    onChange={(e) => setDocumentType(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="конкурс">Конкурс</option>
+                    <option value="приказ">Приказ</option>
+                    <option value="объявление">Объявление</option>
+                    <option value="благодарность">Благодарность</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Заголовок документа
+                  </label>
+                  <input
+                    type="text"
+                    value={documentTitle}
+                    onChange={(e) => setDocumentTitle(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Введите заголовок..."
+                  />
+                </div>
+
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Содержание документа
+                    </label>
+                    <button
+                      onClick={handleBoldText}
+                      className="text-sm px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg font-bold"
+                      title="Сделать выделенный текст жирным"
+                    >
+                      B
+                    </button>
+                  </div>
+                  <textarea
+                    id="documentContent"
+                    value={documentContent}
+                    onChange={(e) => setDocumentContent(e.target.value)}
+                    className="w-full h-64 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                    placeholder="Введите текст документа..."
+                  />
+                  <p className="mt-2 text-sm text-gray-500">
+                    Используйте **текст** для жирного начертания
+                  </p>
+                </div>
+
+                <div className="pt-4 border-t border-gray-200">
+                  <button
+                    onClick={exportDocument}
+                    disabled={isGenerating}
+                    className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${isGenerating ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'} text-white flex items-center justify-center`}
+                  >
+                    {isGenerating ? (
+                      <>
+                        <span className="animate-spin mr-2">🔄</span>
+                        Генерация документа...
+                      </>
+                    ) : (
+                      <>
+                        <span className="mr-2">💾</span>
+                        Сохранить как PNG с гербом
+                      </>
+                    )}
+                  </button>
+                  <p className="mt-2 text-sm text-gray-500 text-center">
+                    Документ будет сохранен в формате A4 с российским гербом
+                  </p>
+                </div>
+              </div>
+
+              {/* Правая колонка - предпросмотр */}
+              <div className="lg:col-span-2">
+                <div className="bg-gray-900 text-white p-4 rounded-t-lg flex items-center justify-between">
+                  <h3 className="font-medium">Предпросмотр документа</h3>
+                  <div className="flex space-x-2">
+                    <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                    <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                  </div>
+                </div>
+                <div className="bg-white border border-gray-300 rounded-b-lg p-8 min-h-[600px]">
+                  <div className="max-w-4xl mx-auto">
+                    {/* Шапка с гербом */}
+                    <div className="text-center mb-8">
+                      <div className="flex justify-center mb-4">
+                        <div className="w-24 h-24 flex items-center justify-center border-2 border-gray-300 rounded-lg">
+                          <div className="text-4xl">🇷🇺</div>
+                        </div>
+                      </div>
+                      <h2 className="text-xl font-bold text-gray-800 mb-2">ГОСУДАРСТВЕННАЯ СЛУЖБА</h2>
+                      <h3 className="text-lg font-semibold text-gray-700 mb-4">УЧЕБНЫЙ ВЗВОД г. ГОРКИ</h3>
+                      <div className="border-t-2 border-gray-400 pt-4">
+                        <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                          {documentType === 'конкурс' ? 'ОБЪЯВЛЕНИЕ О КОНКУРСЕ' : 
+                           documentType === 'приказ' ? 'П Р И К А З' :
+                           documentType === 'объявление' ? 'ОФИЦИАЛЬНОЕ ОБЪЯВЛЕНИЕ' : 
+                           'БЛАГОДАРСТВЕННОЕ ПИСЬМО'}
+                        </h1>
+                      </div>
+                    </div>
+
+                    {/* Заголовок */}
+                    {documentTitle && (
+                      <h2 className="text-xl font-bold text-gray-800 mb-6 text-center">
+                        {documentTitle}
+                      </h2>
+                    )}
+
+                    {/* Содержание */}
+                    {documentContent && (
+                      <div className="text-gray-700 whitespace-pre-line mb-8">
+                        {documentContent.split('**').map((text, index) => (
+                          index % 2 === 1 ? (
+                            <strong key={index} className="font-bold">{text}</strong>
+                          ) : (
+                            text
+                          )
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Подпись */}
+                    <div className="mt-16 pt-8 border-t border-gray-300">
+                      <div className="flex justify-end">
+                        <div className="text-right">
+                          <p className="font-bold text-gray-800">Руководитель учебного взвода</p>
+                          <div className="mt-8 mb-2 w-48 border-b border-gray-400"></div>
+                          <p className="text-gray-600">(подпись)</p>
+                          <p className="text-gray-800 mt-2">И.И. Иванов</p>
+                        </div>
+                      </div>
+                      <div className="mt-8 flex justify-end">
+                        <div className="border-2 border-red-500 rounded-full w-24 h-24 flex items-center justify-center">
+                          <div className="text-center">
+                            <p className="text-xs font-bold text-red-500">ПЕЧАТЬ</p>
+                            <p className="text-xs text-red-500">УЧЕБНОГО ВЗВОДА</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
+
+      <footer className="mt-12 pt-8 border-t border-gray-200 text-center text-gray-600">
+        <p>© {new Date().getFullYear()} Генератор служебных документов. Все права защищены.</p>
+        <p className="text-sm mt-2">Для внутреннего служебного пользования</p>
+      </footer>
+
+      {/* Стили для roundRect если не поддерживается */}
+      <style jsx global>{`
+        CanvasRenderingContext2D.prototype.roundRect || (CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+          if (w < 2 * r) r = w / 2;
+          if (h < 2 * r) r = h / 2;
+          this.beginPath();
+          this.moveTo(x + r, y);
+          this.arcTo(x + w, y, x + w, y + h, r);
+          this.arcTo(x + w, y + h, x, y + h, r);
+          this.arcTo(x, y + h, x, y, r);
+          this.arcTo(x, y, x + w, y, r);
+          this.closePath();
+          return this;
+        });
+      `}</style>
+    </div>
+  )
+}      ctx.fillStyle = 'white'
       ctx.fillRect(0, 0, width, height)
       
       // Настраиваем шрифт
